@@ -4,6 +4,13 @@
 # Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Testing / Tools
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Virtual Environment
 venv/
@@ -22,3 +29,7 @@ node_modules/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
