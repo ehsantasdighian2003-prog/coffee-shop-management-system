@@ -130,7 +130,9 @@ def get_current_user(
 
         try:
 
-            user = UserRepository.get_user_by_id(
+            repo = UserRepository()
+
+            user = repo.get_by_id(
                 conn,
                 user_id
             )

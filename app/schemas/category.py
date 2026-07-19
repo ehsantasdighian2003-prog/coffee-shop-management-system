@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -15,8 +16,7 @@ class CategoryCreate(BaseModel):
         max_length=100
     )
 
-    description: str | None = None
-
+    description: Optional[str] = None
 
 
 # =========================
@@ -31,8 +31,7 @@ class CategoryUpdate(BaseModel):
         max_length=100
     )
 
-    description: str | None = None
-
+    description: Optional[str] = None
 
 
 # =========================
@@ -43,9 +42,9 @@ class CategoryResponse(BaseModel):
 
     id: int
     name: str
-    description: str | None
+    description: Optional[str]
     created_at: datetime
 
-
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }

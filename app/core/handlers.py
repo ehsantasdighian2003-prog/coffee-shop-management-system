@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-
 from app.core.exceptions import AppException
 from app.core.logging import get_logger
 
@@ -91,9 +90,15 @@ async def general_exception_handler(
     exc: Exception
 ):
 
+    print(
+        "UNEXPECTED ERROR:",
+        repr(exc)
+    )
+
     logger.error(
         f"Unexpected error | "
-        f"path={request.url.path}",
+        f"path={request.url.path} | "
+        f"error={repr(exc)}",
         exc_info=True
     )
 

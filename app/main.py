@@ -10,6 +10,7 @@ from app.routes.auth import router as auth_router
 from app.routes.orders import router as orders_router
 from app.routes.products import router as products_router
 from app.routes.categories import router as categories_router
+from app.routes import users
 
 
 from app.core.logging import setup_logging, get_logger
@@ -120,6 +121,7 @@ app.include_router(products_router)
 
 app.include_router(categories_router)
 
+app.include_router(users.router)
 
 # =========================
 # ROOT ENDPOINT

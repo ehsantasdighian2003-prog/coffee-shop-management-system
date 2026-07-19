@@ -7,6 +7,17 @@ from app.repositories.order_repository import OrderRepository
 
 
 class OrderService:
+    """
+    Handles order business logic.
+
+    Responsibilities:
+    - Order creation
+    - Order update
+    - Order deletion
+    - Stock management
+    - Permission validation
+    """
+
 
     def __init__(
         self,
@@ -14,14 +25,17 @@ class OrderService:
     ):
         self.repo = repo or OrderRepository()
 
+
     # =====================================================
     # PRIVATE HELPERS
     # =====================================================
 
-    def _decimal_to_json_value(self, value):
+
+    @staticmethod
+    def _to_float(value):
         """
-        Convert Decimal values from PostgreSQL
-        into JSON compatible values.
+        Convert Decimal values
+        into JSON compatible numbers.
         """
 
         if isinstance(value, Decimal):
@@ -30,121 +44,152 @@ class OrderService:
         return value
 
 
-    def _clean_order(self, order: dict):
+
+    def _serialize_order(
+        self,
+        order: dict
+    ):
         """
-        Normalize order response.
+        Normalize order object.
         """
 
         return {
             "id": order["id"],
             "user_id": order["user_id"],
-            "total_price": self._decimal_to_json_value(
+            "total_price": self._to_float(
                 order["total_price"]
             ),
             "created_at": order["created_at"]
         }
 
 
-    def _clean_order_item(self, item: dict):
+
+    def _serialize_item(
+        self,
+        item: dict
+    ):
         """
-        Normalize order item response.
+        Normalize order item.
         """
 
         return {
             "product_id": item["product_id"],
             "quantity": item["quantity"],
-            "price": self._decimal_to_json_value(
+            "price": self._to_float(
                 item["price"]
             )
         }
 
 
-    def _check_permission(
+
+    def _check_order_permission(
         self,
         order: dict,
         user: dict
     ):
         """
-        RBAC validation.
+        Validate user access.
 
         Admin:
-            Full access
+            Can access all orders.
 
         User:
-            Own orders only
+            Can access own orders only.
         """
 
-        if (
-            user["role"] != "admin"
-            and order["user_id"] != user["id"]
-        ):
+        is_admin = (
+            user["role"] == "admin"
+        )
+
+        is_owner = (
+            order["user_id"] == user["id"]
+        )
+
+
+        if not is_admin and not is_owner:
+
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied."
             )
 
 
-    def _validate_items(
+
+    def _validate_order_items(
         self,
         conn,
         items: list
     ):
         """
-        Validate products and calculate total price.
+        Validate products and
+        calculate order total.
         """
 
         validated_items = []
+
         total_price = Decimal("0")
+
 
         for item in items:
 
-            product_id = item.product_id
-            quantity = item.quantity
-
             product = self.repo.get_product_by_id(
                 conn=conn,
-                product_id=product_id
+                product_id=item.product_id
             )
 
+
             if not product:
+
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Product {product_id} not found."
+                    detail=f"Product {item.product_id} not found."
                 )
+
 
 
             if not product["is_active"]:
+
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Product {product_id} is inactive."
+                    detail=f"Product {item.product_id} is inactive."
                 )
 
 
-            if product["stock"] < quantity:
+
+            if product["stock"] < item.quantity:
+
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Not enough stock for product {product_id}."
+                    detail=f"Not enough stock for product {item.product_id}."
                 )
+
 
 
             price = product["price"]
 
-            total_price += price * quantity
+
+            total_price += (
+                price * item.quantity
+            )
 
 
             validated_items.append(
                 {
-                    "product_id": product_id,
-                    "quantity": quantity,
-                    "price": self._decimal_to_json_value(price)
+                    "product_id": item.product_id,
+                    "quantity": item.quantity,
+                    "price": self._to_float(price)
                 }
             )
 
 
-        return validated_items, total_price
+        return (
+            validated_items,
+            total_price
+        )
 
 
-    def _build_order_response(
+
+    def _build_order_result(
         self,
         order_id: int,
         user_id: int,
@@ -152,21 +197,76 @@ class OrderService:
         items: list
     ):
         """
-        Build create/update order response.
+        Build order response.
         """
 
         return {
             "order_id": order_id,
             "user_id": user_id,
-            "total_price": self._decimal_to_json_value(
+            "total_price": self._to_float(
                 total_price
             ),
             "items": items
         }
         
     # =====================================================
+    # ORDER ITEM HELPERS
+    # =====================================================
+
+
+    def _create_order_items(
+        self,
+        conn,
+        order_id: int,
+        items: list
+    ):
+        """
+        Create order items and decrease stock.
+        """
+
+        for item in items:
+
+            self.repo.create_order_item(
+                conn=conn,
+                order_id=order_id,
+                product_id=item["product_id"],
+                quantity=item["quantity"],
+                price=item["price"]
+            )
+
+
+            self.repo.decrease_stock(
+                conn=conn,
+                product_id=item["product_id"],
+                quantity=item["quantity"]
+            )
+
+
+
+    def _restore_order_stock(
+        self,
+        conn,
+        items: list
+    ):
+        """
+        Restore product stock
+        from existing order items.
+        """
+
+        for item in items:
+
+            self.repo.increase_stock(
+                conn=conn,
+                product_id=item["product_id"],
+                quantity=item["quantity"]
+            )
+
+
+
+    # =====================================================
     # CREATE ORDER
     # =====================================================
+
 
     def create_order(
         self,
@@ -176,9 +276,11 @@ class OrderService:
 
         with UnitOfWork() as uow:
 
-            validated_items, total_price = self._validate_items(
-                conn=uow.conn,
-                items=items
+            validated_items, total_price = (
+                self._validate_order_items(
+                    conn=uow.conn,
+                    items=items
+                )
             )
 
 
@@ -192,25 +294,14 @@ class OrderService:
             order_id = created_order["id"]
 
 
-            for item in validated_items:
-
-                self.repo.create_order_item(
-                    conn=uow.conn,
-                    order_id=order_id,
-                    product_id=item["product_id"],
-                    quantity=item["quantity"],
-                    price=item["price"]
-                )
+            self._create_order_items(
+                conn=uow.conn,
+                order_id=order_id,
+                items=validated_items
+            )
 
 
-                self.repo.decrease_stock(
-                    conn=uow.conn,
-                    product_id=item["product_id"],
-                    quantity=item["quantity"]
-                )
-
-
-            return self._build_order_response(
+            return self._build_order_result(
                 order_id=order_id,
                 user_id=user_id,
                 total_price=total_price,
@@ -223,6 +314,7 @@ class OrderService:
     # UPDATE ORDER
     # =====================================================
 
+
     def update_order(
         self,
         order_id: int,
@@ -232,7 +324,6 @@ class OrderService:
 
         with UnitOfWork() as uow:
 
-
             order = self.repo.get_order_by_id(
                 conn=uow.conn,
                 order_id=order_id
@@ -240,13 +331,14 @@ class OrderService:
 
 
             if not order:
+
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Order not found."
                 )
 
 
-            self._check_permission(
+            self._check_order_permission(
                 order,
                 user
             )
@@ -258,13 +350,10 @@ class OrderService:
             )
 
 
-            for old_item in old_items:
-
-                self.repo.increase_stock(
-                    conn=uow.conn,
-                    product_id=old_item["product_id"],
-                    quantity=old_item["quantity"]
-                )
+            self._restore_order_stock(
+                conn=uow.conn,
+                items=old_items
+            )
 
 
             self.repo.delete_order_items(
@@ -273,28 +362,19 @@ class OrderService:
             )
 
 
-            validated_items, total_price = self._validate_items(
-                conn=uow.conn,
-                items=items
+            validated_items, total_price = (
+                self._validate_order_items(
+                    conn=uow.conn,
+                    items=items
+                )
             )
 
 
-            for item in validated_items:
-
-                self.repo.create_order_item(
-                    conn=uow.conn,
-                    order_id=order_id,
-                    product_id=item["product_id"],
-                    quantity=item["quantity"],
-                    price=item["price"]
-                )
-
-
-                self.repo.decrease_stock(
-                    conn=uow.conn,
-                    product_id=item["product_id"],
-                    quantity=item["quantity"]
-                )
+            self._create_order_items(
+                conn=uow.conn,
+                order_id=order_id,
+                items=validated_items
+            )
 
 
             self.repo.update_order(
@@ -304,7 +384,7 @@ class OrderService:
             )
 
 
-            return self._build_order_response(
+            return self._build_order_result(
                 order_id=order_id,
                 user_id=order["user_id"],
                 total_price=total_price,
@@ -314,6 +394,7 @@ class OrderService:
     # =====================================================
     # DELETE ORDER
     # =====================================================
+
 
     def delete_order(
         self,
@@ -330,31 +411,29 @@ class OrderService:
 
 
             if not order:
+
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Order not found."
                 )
 
 
-            self._check_permission(
+            self._check_order_permission(
                 order,
                 user
             )
 
 
-            order_items = self.repo.get_order_items(
+            items = self.repo.get_order_items(
                 conn=uow.conn,
                 order_id=order_id
             )
 
 
-            for item in order_items:
-
-                self.repo.increase_stock(
-                    conn=uow.conn,
-                    product_id=item["product_id"],
-                    quantity=item["quantity"]
-                )
+            self._restore_order_stock(
+                conn=uow.conn,
+                items=items
+            )
 
 
             self.repo.delete_order_items(
@@ -379,6 +458,7 @@ class OrderService:
     # GET ALL ORDERS
     # =====================================================
 
+
     def get_all_orders(
         self,
         user: dict,
@@ -392,6 +472,7 @@ class OrderService:
 
 
         if user["role"] != "admin":
+
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Admin only access."
@@ -406,10 +487,13 @@ class OrderService:
         )
 
 
-        offset = (page - 1) * limit
+        offset = (
+            page - 1
+        ) * limit
 
 
         with UnitOfWork() as uow:
+
 
             orders = self.repo.get_orders_paginated(
                 conn=uow.conn,
@@ -441,7 +525,7 @@ class OrderService:
                 "total": total,
                 "pages": pages,
                 "data": [
-                    self._clean_order(order)
+                    self._serialize_order(order)
                     for order in orders
                 ]
             }
@@ -452,12 +536,12 @@ class OrderService:
     # GET ORDER BY ID
     # =====================================================
 
+
     def get_order_by_id(
         self,
         order_id: int,
         user: dict
     ):
-
 
         with UnitOfWork() as uow:
 
@@ -469,13 +553,14 @@ class OrderService:
 
 
             if not order:
+
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Order not found."
                 )
 
 
-            self._check_permission(
+            self._check_order_permission(
                 order,
                 user
             )
@@ -488,9 +573,9 @@ class OrderService:
 
 
             return {
-                **self._clean_order(order),
+                **self._serialize_order(order),
                 "items": [
-                    self._clean_order_item(item)
+                    self._serialize_item(item)
                     for item in items
                 ]
             }
@@ -501,11 +586,11 @@ class OrderService:
     # GET MY ORDERS
     # =====================================================
 
+
     def get_orders_by_user(
         self,
         user_id: int
     ):
-
 
         with UnitOfWork() as uow:
 
@@ -516,6 +601,6 @@ class OrderService:
 
 
             return [
-                self._clean_order(order)
+                self._serialize_order(order)
                 for order in orders
             ]

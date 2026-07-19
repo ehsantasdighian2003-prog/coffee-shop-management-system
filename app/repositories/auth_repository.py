@@ -6,6 +6,7 @@ class AuthRepository:
     # =========================
     # GET USER BY USERNAME
     # =========================
+
     @staticmethod
     def get_user_by_username(
         conn,
@@ -20,7 +21,8 @@ class AuthRepository:
                     id,
                     username,
                     password,
-                    role
+                    role,
+                    is_active
                 FROM users
                 WHERE username = %s
                 """,
@@ -32,6 +34,7 @@ class AuthRepository:
     # =========================
     # GET USER BY ID
     # =========================
+
     @staticmethod
     def get_user_by_id(
         conn,
@@ -45,7 +48,8 @@ class AuthRepository:
                 SELECT
                     id,
                     username,
-                    role
+                    role,
+                    is_active
                 FROM users
                 WHERE id = %s
                 """,
@@ -57,11 +61,17 @@ class AuthRepository:
     # =========================
     # CREATE USER
     # =========================
+
     @staticmethod
     def create_user(
         conn,
         username: str,
-        hashed_password: str
+        password: str,
+        first_name=None,
+        last_name=None,
+        email=None,
+        phone_number=None,
+        profile_image=None,
     ):
 
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -70,9 +80,14 @@ class AuthRepository:
                 """
                 INSERT INTO users (
                     username,
-                    password
+                    password,
+                    first_name,
+                    last_name,
+                    email,
+                    phone_number,
+                    profile_image
                 )
-                VALUES (%s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING
                     id,
                     username,
@@ -80,8 +95,34 @@ class AuthRepository:
                 """,
                 (
                     username,
-                    hashed_password
+                    password,
+                    first_name,
+                    last_name,
+                    email,
+                    phone_number,
+                    profile_image,
                 )
             )
 
             return cur.fetchone()
+
+    # =========================
+    # UPDATE LAST LOGIN
+    # =========================
+
+    @staticmethod
+    def update_last_login(
+        conn,
+        user_id: int
+    ):
+
+        with conn.cursor() as cur:
+
+            cur.execute(
+                """
+                UPDATE users
+                SET last_login = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (user_id,)
+            )

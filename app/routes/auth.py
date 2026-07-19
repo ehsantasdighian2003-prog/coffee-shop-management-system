@@ -4,6 +4,7 @@ from app.schemas.auth import (
     UserRegister,
     UserLogin,
     Token,
+    RegisterResponse,
 )
 
 from app.services.auth_service import AuthService
@@ -23,6 +24,7 @@ auth_service = AuthService()
 @router.post(
     "/register",
     status_code=status.HTTP_201_CREATED,
+    response_model=RegisterResponse,
 )
 def register(user: UserRegister):
 

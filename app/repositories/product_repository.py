@@ -280,7 +280,61 @@ class ProductRepository:
 
             return cur.fetchone()
 
+    # =========================
+    # UPDATE PRODUCT
+    # =========================
 
+    @staticmethod
+    def update_product(
+        conn,
+        product_id,
+        name,
+        description,
+        price,
+        stock,
+        is_active,
+        category_id
+    ):
+
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+
+            cur.execute(
+                """
+                UPDATE products
+                SET
+                    name = COALESCE(%s, name),
+                    description = COALESCE(%s, description),
+                    price = COALESCE(%s, price),
+                    stock = COALESCE(%s, stock),
+                    is_active = COALESCE(%s, is_active),
+                    category_id = COALESCE(%s, category_id)
+                WHERE id = %s
+                RETURNING id
+                """,
+                (
+                    name,
+                    description,
+                    price,
+                    stock,
+                    is_active,
+                    category_id,
+                    product_id
+                )
+            )
+
+            updated = cur.fetchone()
+
+            if not updated:
+                return None
+            cur.execute(
+                ProductRepository.PRODUCT_SELECT +
+                """
+                WHERE products.id = %s
+                """,
+                (product_id,)
+            )
+
+            return cur.fetchone()
 
     # =========================
     # DELETE PRODUCT

@@ -6,14 +6,42 @@ from app.repositories.category_repository import CategoryRepository
 
 class CategoryService:
 
+    def __init__(self):
+
+        self.repo = CategoryRepository()
+
+    # =========================
+    # PRIVATE HELPERS
+    # =========================
+
+    def _get_category_or_raise(
+        self,
+        conn,
+        category_id: int
+    ):
+
+        category = self.repo.get_category_by_id(
+            conn,
+            category_id
+        )
+
+        if not category:
+            raise CategoryNotFoundException()
+
+        return category
+
     # =========================
     # CREATE CATEGORY
     # =========================
-    def create_category(self, category_data):
+
+    def create_category(
+        self,
+        category_data
+    ):
 
         with UnitOfWork() as uow:
 
-            return CategoryRepository.create_category(
+            return self.repo.create_category(
                 uow.conn,
                 category_data.name,
                 category_data.description
@@ -22,14 +50,30 @@ class CategoryService:
     # =========================
     # GET ALL CATEGORIES
     # =========================
+
     def get_all_categories(self):
 
         with UnitOfWork() as uow:
 
-            return CategoryRepository.get_all_categories(
+            return self.repo.get_all_categories(
                 uow.conn
             )
 
+    # =========================
+    # GET CATEGORY BY ID
+    # =========================
+
+    def get_category_by_id(
+        self,
+        category_id: int
+    ):
+
+        with UnitOfWork() as uow:
+
+            return self._get_category_or_raise(
+                uow.conn,
+                category_id
+            )
     # =========================
     # GET CATEGORY BY ID
     # =========================
@@ -53,6 +97,7 @@ class CategoryService:
     # =========================
     # UPDATE CATEGORY
     # =========================
+
     def update_category(
         self,
         category_id: int,
@@ -61,8 +106,8 @@ class CategoryService:
 
         with UnitOfWork() as uow:
 
-            category = CategoryRepository.update_category(
-                uow.connection,
+            category = self.repo.update_category(
+                uow.conn,
                 category_id,
                 category_data.name,
                 category_data.description
@@ -73,9 +118,11 @@ class CategoryService:
 
             return category
 
+
     # =========================
     # DELETE CATEGORY
     # =========================
+
     def delete_category(
         self,
         category_id: int
@@ -83,14 +130,15 @@ class CategoryService:
 
         with UnitOfWork() as uow:
 
-            category = CategoryRepository.delete_category(
+            deleted_category = self.repo.delete_category(
                 uow.conn,
                 category_id
             )
 
-            if not category:
+            if not deleted_category:
                 raise CategoryNotFoundException()
 
             return {
-                "message": "Category deleted successfully."
+                "message": "Category deleted successfully.",
+                "category_id": deleted_category["id"]
             }

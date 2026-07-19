@@ -1,4 +1,4 @@
-from app.core.database import get_connection
+from app.core.unit_of_work import UnitOfWork
 from app.core.security import (
     pwd_context,
     verify_password,
@@ -20,14 +20,13 @@ class AuthService:
     # =========================
     # REGISTER
     # =========================
+
     def register(self, user_data):
 
-        conn = get_connection()
-
-        try:
+        with UnitOfWork() as uow:
 
             existing_user = self.repo.get_user_by_username(
-                conn,
+                uow.conn,
                 user_data.username
             )
 
@@ -39,42 +38,42 @@ class AuthService:
             )
 
             user = self.repo.create_user(
-                conn,
-                user_data.username,
-                hashed_password
+                conn=uow.conn,
+                username=user_data.username,
+                password=hashed_password,
+                first_name=getattr(user_data, "first_name", None),
+                last_name=getattr(user_data, "last_name", None),
+                email=getattr(user_data, "email", None),
+                phone_number=getattr(user_data, "phone_number", None),
+                profile_image=getattr(user_data, "profile_image", None),
             )
-
-            conn.commit()
 
             return {
                 "message": "User registered successfully.",
-                "user_id": user["id"]
+                "user_id": user["id"],
             }
-
-        except Exception:
-            conn.rollback()
-            raise
-
-        finally:
-            conn.close()
 
     # =========================
     # LOGIN
     # =========================
+
     def login(self, user_data):
 
-        conn = get_connection()
-
-        try:
+        with UnitOfWork() as uow:
 
             user = self.repo.get_user_by_username(
-                conn,
+                uow.conn,
                 user_data.username
             )
 
             if not user:
                 raise AuthenticationException(
                     "Invalid username or password"
+                )
+
+            if not user.get("is_active", True):
+                raise AuthenticationException(
+                    "User account is inactive"
                 )
 
             if not verify_password(
@@ -85,6 +84,12 @@ class AuthService:
                     "Invalid username or password"
                 )
 
+            if hasattr(self.repo, "update_last_login"):
+                self.repo.update_last_login(
+                    uow.conn,
+                    user["id"]
+                )
+
             access_token = create_access_token(
                 {
                     "user_id": user["id"]
@@ -93,8 +98,5 @@ class AuthService:
 
             return {
                 "access_token": access_token,
-                "token_type": "bearer"
+                "token_type": "bearer",
             }
-
-        finally:
-            conn.close()
