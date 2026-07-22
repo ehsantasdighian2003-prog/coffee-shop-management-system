@@ -1,56 +1,60 @@
-import os
-
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
 
-load_dotenv()
+class Settings(BaseSettings):
+
+    """
+    Application configuration settings.
+    Values are loaded from .env file.
+    """
 
 
-class Settings:
+    # =========================
+    # APPLICATION
+    # =========================
+
+    APP_NAME: str = "Coffee Shop Management System"
+
+
 
     # =========================
     # DATABASE
     # =========================
 
-    DATABASE_NAME = os.getenv(
-        "DATABASE_NAME"
-    )
+    DATABASE_NAME: str
 
-    DATABASE_USER = os.getenv(
-        "DATABASE_USER"
-    )
+    DATABASE_USER: str
 
-    DATABASE_PASSWORD = os.getenv(
-        "DATABASE_PASSWORD"
-    )
+    DATABASE_PASSWORD: str
 
-    DATABASE_HOST = os.getenv(
-        "DATABASE_HOST"
-    )
+    DATABASE_HOST: str = "localhost"
 
-    DATABASE_PORT = os.getenv(
-        "DATABASE_PORT"
-    )
+    DATABASE_PORT: int = 5432
+
 
 
     # =========================
     # JWT
     # =========================
 
-    JWT_SECRET_KEY = os.getenv(
-        "JWT_SECRET_KEY"
-    )
+    JWT_SECRET_KEY: str
 
-    JWT_ALGORITHM = os.getenv(
-        "JWT_ALGORITHM"
-    )
+    JWT_ALGORITHM: str = "HS256"
 
-    ACCESS_TOKEN_EXPIRE_MINUTES = int(
-        os.getenv(
-            "ACCESS_TOKEN_EXPIRE_MINUTES",
-            60
-        )
-    )
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+
+
+    class Config:
+
+        env_file = ".env"
+
+        env_file_encoding = "utf-8"
+
+
+
+# =========================
+# SETTINGS INSTANCE
+# =========================
 
 settings = Settings()

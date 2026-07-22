@@ -1,173 +1,170 @@
-from datetime import (
-    datetime,
-    timedelta,
-    timezone
-)
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict
 
-from fastapi import (
-    Depends,
-    HTTPException,
-)
-
+from fastapi import Depends
 from fastapi.security import (
+    HTTPAuthorizationCredentials,
     HTTPBearer,
-    HTTPAuthorizationCredentials
 )
 
-from jose import (
-    jwt,
-    JWTError
-)
-
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from app.core.config import settings
-from app.core.database import get_connection
+from app.core.exceptions import (
+    AuthenticationException,
+    PermissionDeniedException,
+)
+from app.core.unit_of_work import UnitOfWork
 
-from app.repositories.user_repository import UserRepository
 
-from app.core.exceptions import AuthenticationException
-
-
-# =========================
+# ==================================================
 # PASSWORD HASHING
-# =========================
+# ==================================================
 
 pwd_context = CryptContext(
     schemes=["argon2"],
-    deprecated="auto"
+    deprecated="auto",
 )
 
 
 def verify_password(
     plain_password: str,
-    hashed_password: str
+    hashed_password: str,
 ) -> bool:
+    """
+    Verify plain password against hashed password.
+    """
 
     return pwd_context.verify(
         plain_password,
-        hashed_password
+        hashed_password,
     )
 
 
 def hash_password(
-    password: str
+    password: str,
 ) -> str:
+    """
+    Hash password using Argon2.
+    """
 
-    return pwd_context.hash(password)
+    return pwd_context.hash(
+        password,
+    )
 
 
-# =========================
-# JWT CONFIG
-# =========================
+# ==================================================
+# JWT CONFIGURATION
+# ==================================================
 
 SECRET_KEY = settings.JWT_SECRET_KEY
-
 ALGORITHM = settings.JWT_ALGORITHM
-
 ACCESS_TOKEN_EXPIRE_MINUTES = (
     settings.ACCESS_TOKEN_EXPIRE_MINUTES
 )
 
+
 security = HTTPBearer()
 
 
-# =========================
+# ==================================================
 # CREATE ACCESS TOKEN
-# =========================
+# ==================================================
 
 def create_access_token(
-    data: dict
+    data: dict,
 ) -> str:
+    """
+    Create JWT access token.
+    """
 
     payload = data.copy()
 
     expire = datetime.now(
-        timezone.utc
+        timezone.utc,
     ) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES,
     )
 
     payload.update(
         {
-            "exp": expire
+            "exp": expire,
         }
     )
 
     return jwt.encode(
         payload,
         SECRET_KEY,
-        algorithm=ALGORITHM
+        algorithm=ALGORITHM,
     )
 
 
-# =========================
-# GET CURRENT USER
-# =========================
+# ==================================================
+# CURRENT USER
+# ==================================================
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> Dict[str, Any]:
+    """
+    Validate JWT token and return current user.
+    """
 
     try:
-
         token = credentials.credentials
 
         payload = jwt.decode(
             token,
             SECRET_KEY,
-            algorithms=[ALGORITHM]
+            algorithms=[ALGORITHM],
         )
 
-        user_id = payload.get("user_id")
+        user_id = payload.get(
+            "user_id",
+        )
 
         if not user_id:
             raise AuthenticationException(
-                "Invalid token"
+                "Invalid token",
             )
 
-        conn = get_connection()
+        with UnitOfWork() as uow:
 
-        try:
-
-            repo = UserRepository()
-
-            user = repo.get_by_id(
-                conn,
-                user_id
+            user = uow.users.get_by_id(
+                user_id,
             )
-
-        finally:
-
-            conn.close()
 
         if not user:
             raise AuthenticationException(
-                "User not found"
+                "User not found",
+            )
+
+        if not user["is_active"]:
+            raise AuthenticationException(
+                "User account is inactive",
             )
 
         return user
 
     except JWTError:
-
         raise AuthenticationException(
-            "Invalid token"
+            "Invalid token",
         )
 
 
-# =========================
-# ADMIN CHECK
-# =========================
+# ==================================================
+# ROLE CHECK
+# ==================================================
 
 def admin_required(
-    user=Depends(get_current_user)
-):
+    user: Dict[str, Any] = Depends(get_current_user),
+) -> Dict[str, Any]:
+    """
+    Allow access only for admin users.
+    """
 
     if user["role"] != "admin":
-
-        raise HTTPException(
-            status_code=403,
-            detail="Admin only access"
-        )
+        raise PermissionDeniedException()
 
     return user

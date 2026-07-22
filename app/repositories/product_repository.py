@@ -4,6 +4,12 @@ from psycopg2.extras import RealDictCursor
 class ProductRepository:
 
 
+    def __init__(self, conn):
+
+        self.conn = conn
+
+
+
     # =========================
     # BASE PRODUCT SELECT
     # =========================
@@ -35,13 +41,13 @@ class ProductRepository:
     """
 
 
+
     # =========================
     # CREATE PRODUCT
     # =========================
 
-    @staticmethod
     def create_product(
-        conn,
+        self,
         name,
         description,
         price,
@@ -50,7 +56,9 @@ class ProductRepository:
         category_id
     ):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
                 """
@@ -77,15 +85,18 @@ class ProductRepository:
                 )
             )
 
+
             product_id = cur.fetchone()["id"]
 
+
             cur.execute(
-                ProductRepository.PRODUCT_SELECT +
+                self.PRODUCT_SELECT +
                 """
                 WHERE products.id = %s
                 """,
                 (product_id,)
             )
+
 
             return cur.fetchone()
 
@@ -95,9 +106,8 @@ class ProductRepository:
     # GET PRODUCTS PAGINATED
     # =========================
 
-    @staticmethod
     def get_products_paginated(
-        conn,
+        self,
         page,
         limit,
         category_id=None,
@@ -107,7 +117,7 @@ class ProductRepository:
 
         offset = (page - 1) * limit
 
-        query = ProductRepository.PRODUCT_SELECT
+        query = self.PRODUCT_SELECT
 
         conditions = []
         params = []
@@ -142,25 +152,36 @@ class ProductRepository:
             )
 
 
+
         if conditions:
 
-            query += " WHERE " + " AND ".join(conditions)
+            query += (
+                " WHERE "
+                +
+                " AND ".join(conditions)
+            )
 
 
 
         if sort == "price_asc":
 
-            query += " ORDER BY products.price ASC"
+            query += """
+                ORDER BY products.price ASC
+            """
 
 
         elif sort == "price_desc":
 
-            query += " ORDER BY products.price DESC"
+            query += """
+                ORDER BY products.price DESC
+            """
 
 
         else:
 
-            query += " ORDER BY products.id DESC"
+            query += """
+                ORDER BY products.id DESC
+            """
 
 
 
@@ -168,6 +189,7 @@ class ProductRepository:
             LIMIT %s
             OFFSET %s
         """
+
 
         params.extend(
             [
@@ -177,7 +199,9 @@ class ProductRepository:
         )
 
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
                 query,
@@ -192,9 +216,8 @@ class ProductRepository:
     # COUNT PRODUCTS
     # =========================
 
-    @staticmethod
     def count_products(
-        conn,
+        self,
         category_id=None,
         search=None
     ):
@@ -204,8 +227,10 @@ class ProductRepository:
             FROM products
         """
 
+
         conditions = []
         params = []
+
 
 
         if category_id:
@@ -247,7 +272,8 @@ class ProductRepository:
             )
 
 
-        with conn.cursor() as cur:
+
+        with self.conn.cursor() as cur:
 
             cur.execute(
                 query,
@@ -262,16 +288,17 @@ class ProductRepository:
     # GET PRODUCT BY ID
     # =========================
 
-    @staticmethod
     def get_product_by_id(
-        conn,
+        self,
         product_id
     ):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
-                ProductRepository.PRODUCT_SELECT +
+                self.PRODUCT_SELECT +
                 """
                 WHERE products.id = %s
                 """,
@@ -280,13 +307,14 @@ class ProductRepository:
 
             return cur.fetchone()
 
+
+
     # =========================
     # UPDATE PRODUCT
     # =========================
 
-    @staticmethod
     def update_product(
-        conn,
+        self,
         product_id,
         name,
         description,
@@ -296,11 +324,15 @@ class ProductRepository:
         category_id
     ):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
 
             cur.execute(
                 """
                 UPDATE products
+
                 SET
                     name = COALESCE(%s, name),
                     description = COALESCE(%s, description),
@@ -308,7 +340,9 @@ class ProductRepository:
                     stock = COALESCE(%s, stock),
                     is_active = COALESCE(%s, is_active),
                     category_id = COALESCE(%s, category_id)
+
                 WHERE id = %s
+
                 RETURNING id
                 """,
                 (
@@ -322,39 +356,52 @@ class ProductRepository:
                 )
             )
 
+
             updated = cur.fetchone()
 
+
             if not updated:
+
                 return None
+
+
+
             cur.execute(
-                ProductRepository.PRODUCT_SELECT +
+                self.PRODUCT_SELECT +
                 """
                 WHERE products.id = %s
                 """,
                 (product_id,)
             )
 
+
             return cur.fetchone()
+
+
 
     # =========================
     # DELETE PRODUCT
     # =========================
 
-    @staticmethod
     def delete_product(
-        conn,
+        self,
         product_id
     ):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
                 """
                 DELETE FROM products
+
                 WHERE id = %s
+
                 RETURNING id
                 """,
                 (product_id,)
             )
+
 
             return cur.fetchone()

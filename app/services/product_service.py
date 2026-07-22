@@ -7,16 +7,8 @@ from app.core.exceptions import (
     CategoryNotFoundException
 )
 
-from app.repositories.product_repository import ProductRepository
-from app.repositories.category_repository import CategoryRepository
-
 
 class ProductService:
-
-    def __init__(self):
-
-        self.repo = ProductRepository()
-        self.category_repo = CategoryRepository()
 
 
     # =========================
@@ -25,12 +17,11 @@ class ProductService:
 
     def _validate_category(
         self,
-        conn,
+        uow,
         category_id: int
     ):
 
-        category = self.category_repo.get_category_by_id(
-            conn,
+        category = uow.categories.get_category_by_id(
             category_id
         )
 
@@ -68,12 +59,12 @@ class ProductService:
         with UnitOfWork() as uow:
 
             self._validate_category(
-                uow.conn,
+                uow,
                 product_data.category_id
             )
 
-            return self.repo.create_product(
-                uow.conn,
+
+            return uow.products.create_product(
                 product_data.name,
                 product_data.description,
                 product_data.price,
@@ -81,7 +72,9 @@ class ProductService:
                 product_data.is_active,
                 product_data.category_id
             )
-            
+
+
+
     # =========================
     # GET PRODUCTS PAGINATED
     # =========================
@@ -97,8 +90,8 @@ class ProductService:
 
         with UnitOfWork() as uow:
 
-            products = self.repo.get_products_paginated(
-                uow.conn,
+
+            products = uow.products.get_products_paginated(
                 page,
                 limit,
                 category_id,
@@ -106,14 +99,16 @@ class ProductService:
                 sort
             )
 
-            total = self.repo.count_products(
-                uow.conn,
+
+            total = uow.products.count_products(
                 category_id,
                 search
             )
 
+
             return {
                 "data": products,
+
                 "meta": {
                     "page": page,
                     "limit": limit,
@@ -138,13 +133,15 @@ class ProductService:
 
         with UnitOfWork() as uow:
 
-            product = self.repo.get_product_by_id(
-                uow.conn,
+
+            product = uow.products.get_product_by_id(
                 product_id
             )
 
+
             if not product:
                 raise ProductNotFoundException()
+
 
             return product
 
@@ -162,16 +159,17 @@ class ProductService:
 
         with UnitOfWork() as uow:
 
+
             if product_data.category_id is not None:
 
                 self._validate_category(
-                    uow.conn,
+                    uow,
                     product_data.category_id
                 )
 
 
-            product = self.repo.update_product(
-                uow.conn,
+
+            product = uow.products.update_product(
                 product_id,
                 product_data.name,
                 product_data.description,
@@ -187,7 +185,9 @@ class ProductService:
 
 
             return product
-        
+
+
+
     # =========================
     # DELETE PRODUCT
     # =========================
@@ -199,8 +199,8 @@ class ProductService:
 
         with UnitOfWork() as uow:
 
-            deleted_product = self.repo.delete_product(
-                uow.conn,
+
+            deleted_product = uow.products.delete_product(
                 product_id
             )
 

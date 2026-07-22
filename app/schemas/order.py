@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from decimal import Decimal
 
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -9,16 +9,31 @@ from pydantic import BaseModel, Field, ConfigDict
 # =====================================================
 
 class OrderItemCreate(BaseModel):
-    product_id: int = Field(..., gt=0)
-    quantity: int = Field(..., gt=0)
+    product_id: int = Field(
+        ...,
+        gt=0
+    )
+
+    quantity: int = Field(
+        ...,
+        gt=0
+    )
 
 
 class OrderCreate(BaseModel):
-    items: List[OrderItemCreate]
+
+    items: list[OrderItemCreate] = Field(
+        ...,
+        min_length=1
+    )
 
 
 class OrderUpdate(BaseModel):
-    items: List[OrderItemCreate]
+
+    items: list[OrderItemCreate] = Field(
+        ...,
+        min_length=1
+    )
 
 
 # =====================================================
@@ -26,39 +41,67 @@ class OrderUpdate(BaseModel):
 # =====================================================
 
 class OrderItemResponse(BaseModel):
-    product_id: int
-    quantity: int
-    price: float
 
-    model_config = ConfigDict(from_attributes=True)
+    product_id: int
+
+    quantity: int
+
+    price: Decimal
+
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 class OrderResponse(BaseModel):
-    order_id: int
-    user_id: int
-    total_price: float
-    items: List[OrderItemResponse]
 
-    model_config = ConfigDict(from_attributes=True)
+    order_id: int
+
+    user_id: int
+
+    total_price: Decimal
+
+    items: list[OrderItemResponse]
+
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 class OrderSummary(BaseModel):
+
     id: int
+
     user_id: int
-    total_price: float
+
+    total_price: Decimal
+
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 class OrderDetail(BaseModel):
-    id: int
-    user_id: int
-    total_price: float
-    created_at: datetime
-    items: List[OrderItemResponse]
 
-    model_config = ConfigDict(from_attributes=True)
+    id: int
+
+    user_id: int
+
+    total_price: Decimal
+
+    created_at: datetime
+
+    items: list[OrderItemResponse]
+
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 # =====================================================
@@ -66,17 +109,30 @@ class OrderDetail(BaseModel):
 # =====================================================
 
 class PaginationMeta(BaseModel):
+
     page: int
+
     limit: int
+
     total: int
+
     pages: int
+
 
 
 class PaginatedOrdersResponse(BaseModel):
-    page: int
-    limit: int
-    total: int
-    pages: int
-    data: List[OrderSummary]
 
-    model_config = ConfigDict(from_attributes=True)
+    page: int
+
+    limit: int
+
+    total: int
+
+    pages: int
+
+    data: list[OrderSummary]
+
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )

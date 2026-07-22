@@ -1,6 +1,8 @@
+from http import HTTPStatus
+
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.exceptions import AppException
@@ -16,8 +18,8 @@ logger = get_logger(__name__)
 
 async def app_exception_handler(
     request: Request,
-    exc: AppException
-):
+    exc: AppException,
+) -> JSONResponse:
 
     logger.warning(
         f"Application error: {exc.detail} | "
@@ -39,8 +41,8 @@ async def app_exception_handler(
 
 async def http_exception_handler(
     request: Request,
-    exc: StarletteHTTPException
-):
+    exc: StarletteHTTPException,
+) -> JSONResponse:
 
     logger.warning(
         f"HTTP error: {exc.status_code} | "
@@ -62,8 +64,8 @@ async def http_exception_handler(
 
 async def validation_exception_handler(
     request: Request,
-    exc: RequestValidationError
-):
+    exc: RequestValidationError,
+) -> JSONResponse:
 
     logger.warning(
         f"Validation error | "
@@ -72,7 +74,7 @@ async def validation_exception_handler(
     )
 
     return JSONResponse(
-        status_code=422,
+        status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
         content={
             "success": False,
             "message": "Validation Error",
@@ -87,23 +89,18 @@ async def validation_exception_handler(
 
 async def general_exception_handler(
     request: Request,
-    exc: Exception
-):
-
-    print(
-        "UNEXPECTED ERROR:",
-        repr(exc)
-    )
+    exc: Exception,
+) -> JSONResponse:
 
     logger.error(
         f"Unexpected error | "
         f"path={request.url.path} | "
         f"error={repr(exc)}",
-        exc_info=True
+        exc_info=True,
     )
 
     return JSONResponse(
-        status_code=500,
+        status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
         content={
             "success": False,
             "message": "Internal Server Error",

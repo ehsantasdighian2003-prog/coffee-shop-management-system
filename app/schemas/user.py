@@ -1,95 +1,106 @@
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 
-# =========================
-# Base User Schema
-# =========================
+# ==================================================
+# BASE USER SCHEMAS
+# ==================================================
 
 class UserBase(BaseModel):
+    """
+    Base schema shared across user requests.
+    """
+
     username: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    phone_number: Optional[str] = None
-    profile_image: Optional[str] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    email: EmailStr | None = None
+    phone_number: str | None = None
+    profile_image: str | None = None
 
 
-# =========================
-# Create User
-# =========================
+# ==================================================
+# CREATE USER
+# ==================================================
 
 class UserCreate(UserBase):
     password: str
 
 
-# =========================
-# Update User
-# =========================
+# ==================================================
+# UPDATE USER
+# ==================================================
 
 class UserUpdate(UserBase):
     pass
 
 
-# =========================
-# Update Role Request
-# =========================
+# ==================================================
+# UPDATE USER ROLE
+# ==================================================
 
 class UpdateUserRoleRequest(BaseModel):
     role: Literal["admin", "user"]
 
 
-# =========================
-# Change Password
-# =========================
+# ==================================================
+# CHANGE PASSWORD
+# ==================================================
 
 class ChangePasswordRequest(BaseModel):
     old_password: str
     new_password: str
-
-
-# =========================
-# User Profile Response
-# =========================
+    
+# ==================================================
+# USER PROFILE RESPONSE
+# ==================================================
 
 class UserProfileResponse(BaseModel):
     id: int
     username: str
 
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: str | None = None
+    last_name: str | None = None
 
-    email: Optional[EmailStr] = None
-    phone_number: Optional[str] = None
-    profile_image: Optional[str] = None
+    email: EmailStr | None = None
+    phone_number: str | None = None
+    profile_image: str | None = None
 
     role: str
     is_active: bool
 
     created_at: datetime
-    deleted_at: Optional[datetime] = None
+    deleted_at: datetime | None = None
 
     model_config = ConfigDict(
-        from_attributes=True
+        from_attributes=True,
     )
 
 
-# =========================
-# User List Response
-# =========================
+# ==================================================
+# PAGINATION METADATA
+# ==================================================
 
-class UserListResponse(BaseModel):
-    users: List[UserProfileResponse]
-    total: int
+class PaginationMeta(BaseModel):
     page: int
     limit: int
+    total: int
+    pages: int
 
 
-# =========================
-# Generic Status Response
-# =========================
+# ==================================================
+# USER LIST RESPONSE
+# ==================================================
+
+class UserListResponse(BaseModel):
+    data: list[UserProfileResponse]
+    meta: PaginationMeta
+    
+# ==================================================
+# USER STATUS RESPONSE
+# ==================================================
 
 class UserStatusResponse(BaseModel):
     message: str

@@ -1,19 +1,35 @@
+from typing import Any
+
+from psycopg2.extensions import connection
 from psycopg2.extras import RealDictCursor
 
 
 class AuthRepository:
+    """
+    Repository responsible for all authentication-related
+    database operations.
+    """
 
-    # =========================
+    def __init__(self, conn: connection):
+        self.conn = conn
+
+    # ==================================================
+    # PRIVATE HELPERS
+    # ==================================================
+
+    def _cursor(self):
+        return self.conn.cursor(cursor_factory=RealDictCursor)
+
+    # ==================================================
     # GET USER BY USERNAME
-    # =========================
+    # ==================================================
 
-    @staticmethod
     def get_user_by_username(
-        conn,
-        username: str
-    ):
+        self,
+        username: str,
+    ) -> dict[str, Any] | None:
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self._cursor() as cur:
 
             cur.execute(
                 """
@@ -26,22 +42,21 @@ class AuthRepository:
                 FROM users
                 WHERE username = %s
                 """,
-                (username,)
+                (username,),
             )
 
             return cur.fetchone()
-
-    # =========================
+        
+    # ==================================================
     # GET USER BY ID
-    # =========================
+    # ==================================================
 
-    @staticmethod
     def get_user_by_id(
-        conn,
-        user_id: int
-    ):
+        self,
+        user_id: int,
+    ) -> dict[str, Any] | None:
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self._cursor() as cur:
 
             cur.execute(
                 """
@@ -53,28 +68,27 @@ class AuthRepository:
                 FROM users
                 WHERE id = %s
                 """,
-                (user_id,)
+                (user_id,),
             )
 
             return cur.fetchone()
 
-    # =========================
+    # ==================================================
     # CREATE USER
-    # =========================
+    # ==================================================
 
-    @staticmethod
     def create_user(
-        conn,
+        self,
         username: str,
         password: str,
-        first_name=None,
-        last_name=None,
-        email=None,
-        phone_number=None,
-        profile_image=None,
-    ):
+        first_name: str | None = None,
+        last_name: str | None = None,
+        email: str | None = None,
+        phone_number: str | None = None,
+        profile_image: str | None = None,
+    ) -> dict[str, Any] | None:
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self._cursor() as cur:
 
             cur.execute(
                 """
@@ -101,28 +115,28 @@ class AuthRepository:
                     email,
                     phone_number,
                     profile_image,
-                )
+                ),
             )
 
             return cur.fetchone()
-
-    # =========================
+        
+    # ==================================================
     # UPDATE LAST LOGIN
-    # =========================
+    # ==================================================
 
-    @staticmethod
     def update_last_login(
-        conn,
-        user_id: int
-    ):
+        self,
+        user_id: int,
+    ) -> None:
 
-        with conn.cursor() as cur:
+        with self.conn.cursor() as cur:
 
             cur.execute(
                 """
                 UPDATE users
-                SET last_login = CURRENT_TIMESTAMP
+                SET
+                    last_login = CURRENT_TIMESTAMP
                 WHERE id = %s
                 """,
-                (user_id,)
+                (user_id,),
             )

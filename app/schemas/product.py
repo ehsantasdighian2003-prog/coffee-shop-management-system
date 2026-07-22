@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from decimal import Decimal
+
+from pydantic import BaseModel, Field, ConfigDict
 
 
 # =========================
@@ -9,7 +10,13 @@ from typing import Optional, List
 class CategorySimple(BaseModel):
 
     id: int
+
     name: str
+
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 # =========================
@@ -24,9 +31,9 @@ class ProductCreate(BaseModel):
         max_length=100
     )
 
-    description: Optional[str] = None
+    description: str | None = None
 
-    price: float = Field(
+    price: Decimal = Field(
         ...,
         gt=0
     )
@@ -38,7 +45,10 @@ class ProductCreate(BaseModel):
 
     is_active: bool = True
 
-    category_id: int
+    category_id: int = Field(
+        ...,
+        gt=0
+    )
 
 
 # =========================
@@ -47,27 +57,30 @@ class ProductCreate(BaseModel):
 
 class ProductUpdate(BaseModel):
 
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None,
         min_length=2,
         max_length=100
     )
 
-    description: Optional[str] = None
+    description: str | None = None
 
-    price: Optional[float] = Field(
+    price: Decimal | None = Field(
         None,
         gt=0
     )
 
-    stock: Optional[int] = Field(
+    stock: int | None = Field(
         None,
         ge=0
     )
 
-    is_active: Optional[bool] = None
+    is_active: bool | None = None
 
-    category_id: Optional[int] = None
+    category_id: int | None = Field(
+        None,
+        gt=0
+    )
 
 
 # =========================
@@ -80,15 +93,20 @@ class ProductResponse(BaseModel):
 
     name: str
 
-    description: Optional[str] = None
+    description: str | None = None
 
-    price: float
+    price: Decimal
 
     stock: int
 
     is_active: bool
 
-    category: Optional[CategorySimple] = None
+    category: CategorySimple | None = None
+
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 # =========================
@@ -101,13 +119,18 @@ class ProductSummary(BaseModel):
 
     name: str
 
-    price: float
+    price: Decimal
 
     stock: int
 
     is_active: bool
 
-    category: Optional[CategorySimple] = None
+    category: CategorySimple | None = None
+
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 # =========================
@@ -131,6 +154,6 @@ class PaginationMeta(BaseModel):
 
 class ProductListResponse(BaseModel):
 
-    data: List[ProductResponse]
+    data: list[ProductResponse]
 
     meta: PaginationMeta

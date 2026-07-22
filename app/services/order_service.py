@@ -3,7 +3,6 @@ from decimal import Decimal
 from fastapi import HTTPException, status
 
 from app.core.unit_of_work import UnitOfWork
-from app.repositories.order_repository import OrderRepository
 
 
 class OrderService:
@@ -19,11 +18,8 @@ class OrderService:
     """
 
 
-    def __init__(
-        self,
-        repo: OrderRepository | None = None
-    ):
-        self.repo = repo or OrderRepository()
+    def __init__(self):
+        pass
 
 
     # =====================================================
@@ -33,10 +29,6 @@ class OrderService:
 
     @staticmethod
     def _to_float(value):
-        """
-        Convert Decimal values
-        into JSON compatible numbers.
-        """
 
         if isinstance(value, Decimal):
             return float(value)
@@ -49,9 +41,6 @@ class OrderService:
         self,
         order: dict
     ):
-        """
-        Normalize order object.
-        """
 
         return {
             "id": order["id"],
@@ -68,9 +57,6 @@ class OrderService:
         self,
         item: dict
     ):
-        """
-        Normalize order item.
-        """
 
         return {
             "product_id": item["product_id"],
@@ -87,15 +73,6 @@ class OrderService:
         order: dict,
         user: dict
     ):
-        """
-        Validate user access.
-
-        Admin:
-            Can access all orders.
-
-        User:
-            Can access own orders only.
-        """
 
         is_admin = (
             user["role"] == "admin"
@@ -117,13 +94,9 @@ class OrderService:
 
     def _validate_order_items(
         self,
-        conn,
+        uow,
         items: list
     ):
-        """
-        Validate products and
-        calculate order total.
-        """
 
         validated_items = []
 
@@ -132,8 +105,7 @@ class OrderService:
 
         for item in items:
 
-            product = self.repo.get_product_by_id(
-                conn=conn,
+            product = uow.orders.get_product_by_id(
                 product_id=item.product_id
             )
 
@@ -177,7 +149,7 @@ class OrderService:
                 {
                     "product_id": item.product_id,
                     "quantity": item.quantity,
-                    "price": self._to_float(price)
+                    "price": price
                 }
             )
 
@@ -196,9 +168,6 @@ class OrderService:
         total_price,
         items: list
     ):
-        """
-        Build order response.
-        """
 
         return {
             "order_id": order_id,
@@ -208,26 +177,25 @@ class OrderService:
             ),
             "items": items
         }
-        
+
+
+
     # =====================================================
-    # ORDER ITEM HELPERS
+    # ORDER ITEMS
     # =====================================================
 
 
     def _create_order_items(
         self,
-        conn,
+        uow,
         order_id: int,
         items: list
     ):
-        """
-        Create order items and decrease stock.
-        """
+
 
         for item in items:
 
-            self.repo.create_order_item(
-                conn=conn,
+            uow.orders.create_order_item(
                 order_id=order_id,
                 product_id=item["product_id"],
                 quantity=item["quantity"],
@@ -235,8 +203,7 @@ class OrderService:
             )
 
 
-            self.repo.decrease_stock(
-                conn=conn,
+            uow.orders.decrease_stock(
                 product_id=item["product_id"],
                 quantity=item["quantity"]
             )
@@ -245,18 +212,14 @@ class OrderService:
 
     def _restore_order_stock(
         self,
-        conn,
+        uow,
         items: list
     ):
-        """
-        Restore product stock
-        from existing order items.
-        """
+
 
         for item in items:
 
-            self.repo.increase_stock(
-                conn=conn,
+            uow.orders.increase_stock(
                 product_id=item["product_id"],
                 quantity=item["quantity"]
             )
@@ -264,7 +227,7 @@ class OrderService:
 
 
     # =====================================================
-    # CREATE ORDER
+    # CREATE
     # =====================================================
 
 
@@ -274,18 +237,19 @@ class OrderService:
         items: list
     ):
 
+
         with UnitOfWork() as uow:
+
 
             validated_items, total_price = (
                 self._validate_order_items(
-                    conn=uow.conn,
-                    items=items
+                    uow,
+                    items
                 )
             )
 
 
-            created_order = self.repo.create_order(
-                conn=uow.conn,
+            created_order = uow.orders.create_order(
                 user_id=user_id,
                 total_price=total_price
             )
@@ -295,23 +259,23 @@ class OrderService:
 
 
             self._create_order_items(
-                conn=uow.conn,
-                order_id=order_id,
-                items=validated_items
+                uow,
+                order_id,
+                validated_items
             )
 
 
             return self._build_order_result(
-                order_id=order_id,
-                user_id=user_id,
-                total_price=total_price,
-                items=validated_items
+                order_id,
+                user_id,
+                total_price,
+                validated_items
             )
 
 
 
     # =====================================================
-    # UPDATE ORDER
+    # UPDATE
     # =====================================================
 
 
@@ -322,11 +286,12 @@ class OrderService:
         items: list
     ):
 
+
         with UnitOfWork() as uow:
 
-            order = self.repo.get_order_by_id(
-                conn=uow.conn,
-                order_id=order_id
+
+            order = uow.orders.get_order_by_id(
+                order_id
             )
 
 
@@ -338,61 +303,61 @@ class OrderService:
                 )
 
 
+
             self._check_order_permission(
                 order,
                 user
             )
 
 
-            old_items = self.repo.get_order_items(
-                conn=uow.conn,
-                order_id=order_id
+            old_items = uow.orders.get_order_items(
+                order_id
             )
 
 
             self._restore_order_stock(
-                conn=uow.conn,
-                items=old_items
+                uow,
+                old_items
             )
 
 
-            self.repo.delete_order_items(
-                conn=uow.conn,
-                order_id=order_id
+            uow.orders.delete_order_items(
+                order_id
             )
 
 
             validated_items, total_price = (
                 self._validate_order_items(
-                    conn=uow.conn,
-                    items=items
+                    uow,
+                    items
                 )
             )
 
 
             self._create_order_items(
-                conn=uow.conn,
-                order_id=order_id,
-                items=validated_items
+                uow,
+                order_id,
+                validated_items
             )
 
 
-            self.repo.update_order(
-                conn=uow.conn,
-                order_id=order_id,
-                total_price=total_price
+            uow.orders.update_order(
+                order_id,
+                total_price
             )
 
 
             return self._build_order_result(
-                order_id=order_id,
-                user_id=order["user_id"],
-                total_price=total_price,
-                items=validated_items
+                order_id,
+                order["user_id"],
+                total_price,
+                validated_items
             )
-            
+
+
+
     # =====================================================
-    # DELETE ORDER
+    # DELETE
     # =====================================================
 
 
@@ -402,11 +367,12 @@ class OrderService:
         user: dict
     ):
 
+
         with UnitOfWork() as uow:
 
-            order = self.repo.get_order_by_id(
-                conn=uow.conn,
-                order_id=order_id
+
+            order = uow.orders.get_order_by_id(
+                order_id
             )
 
 
@@ -424,27 +390,24 @@ class OrderService:
             )
 
 
-            items = self.repo.get_order_items(
-                conn=uow.conn,
-                order_id=order_id
+            items = uow.orders.get_order_items(
+                order_id
             )
 
 
             self._restore_order_stock(
-                conn=uow.conn,
-                items=items
+                uow,
+                items
             )
 
 
-            self.repo.delete_order_items(
-                conn=uow.conn,
-                order_id=order_id
+            uow.orders.delete_order_items(
+                order_id
             )
 
 
-            self.repo.delete_order(
-                conn=uow.conn,
-                order_id=order_id
+            uow.orders.delete_order(
+                order_id
             )
 
 
@@ -455,7 +418,7 @@ class OrderService:
 
 
     # =====================================================
-    # GET ALL ORDERS
+    # GET ALL
     # =====================================================
 
 
@@ -492,25 +455,24 @@ class OrderService:
         ) * limit
 
 
+
         with UnitOfWork() as uow:
 
 
-            orders = self.repo.get_orders_paginated(
-                conn=uow.conn,
-                limit=limit,
-                offset=offset,
-                search=search,
-                min_total=min_total,
-                max_total=max_total,
-                sort=sort
+            orders = uow.orders.get_orders_paginated(
+                limit,
+                offset,
+                search,
+                min_total,
+                max_total,
+                sort
             )
 
 
-            total = self.repo.count_orders(
-                conn=uow.conn,
-                search=search,
-                min_total=min_total,
-                max_total=max_total
+            total = uow.orders.count_orders(
+                search,
+                min_total,
+                max_total
             )
 
 
@@ -533,7 +495,7 @@ class OrderService:
 
 
     # =====================================================
-    # GET ORDER BY ID
+    # GET BY ID
     # =====================================================
 
 
@@ -543,12 +505,12 @@ class OrderService:
         user: dict
     ):
 
+
         with UnitOfWork() as uow:
 
 
-            order = self.repo.get_order_by_id(
-                conn=uow.conn,
-                order_id=order_id
+            order = uow.orders.get_order_by_id(
+                order_id
             )
 
 
@@ -566,9 +528,8 @@ class OrderService:
             )
 
 
-            items = self.repo.get_order_items(
-                conn=uow.conn,
-                order_id=order_id
+            items = uow.orders.get_order_items(
+                order_id
             )
 
 
@@ -583,7 +544,7 @@ class OrderService:
 
 
     # =====================================================
-    # GET MY ORDERS
+    # MY ORDERS
     # =====================================================
 
 
@@ -592,11 +553,12 @@ class OrderService:
         user_id: int
     ):
 
+
         with UnitOfWork() as uow:
 
-            orders = self.repo.get_orders_by_user(
-                conn=uow.conn,
-                user_id=user_id
+
+            orders = uow.orders.get_orders_by_user(
+                user_id
             )
 
 

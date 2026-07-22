@@ -1,224 +1,310 @@
-from app.core.unit_of_work import UnitOfWork
-from app.core.security import pwd_context, verify_password
+from typing import Any
 
 from app.core.exceptions import (
+    AuthenticationException,
     UserNotFoundException,
 )
 
+from app.core.security import (
+    hash_password,
+    verify_password,
+)
+
+from app.core.unit_of_work import UnitOfWork
+
+
 
 class UserService:
+    """
+    Handles business logic related to users.
+    """
 
 
-    # =========================
+    # ==================================================
     # GET USER BY ID
-    # =========================
+    # ==================================================
+
 
     def get_user_by_id(
         self,
-        user_id: int
-    ):
+        user_id: int,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
             user = uow.users.get_by_id(
-                uow.conn,
                 user_id
             )
 
+
             if not user:
+
                 raise UserNotFoundException()
+
 
             return user
 
 
-    # =========================
-    # GET ALL USERS
-    # =========================
+
+    # ==================================================
+    # GET USERS PAGINATED
+    # ==================================================
+
 
     def get_users(
         self,
         limit: int = 20,
-        offset: int = 0
-    ):
+        offset: int = 0,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
             users = uow.users.get_all(
-                uow.conn,
                 limit,
-                offset
+                offset,
             )
 
-            total = uow.users.count_users(
-                uow.conn
-            )
+
+            total = uow.users.count_users()
+
 
             return {
-                "users": users,
-                "total": total,
-                "page": (offset // limit) + 1,
-                "limit": limit
+                "data": users,
+
+                "meta": {
+                    "page": (offset // limit) + 1,
+                    "limit": limit,
+                    "total": total,
+                    "pages": (
+                        total + limit - 1
+                    ) // limit,
+                },
             }
 
 
-    # =========================
+
+    # ==================================================
     # UPDATE PROFILE
-    # =========================
+    # ==================================================
+
 
     def update_profile(
         self,
         user_id: int,
-        user_data
-    ):
+        user_data,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
+
             user = uow.users.update_user(
-                uow.conn,
                 user_id,
                 user_data.first_name,
                 user_data.last_name,
                 user_data.email,
                 user_data.phone_number,
-                user_data.profile_image
+                user_data.profile_image,
             )
 
+
             if not user:
+
                 raise UserNotFoundException()
+
 
             return user
 
 
-    # =========================
+
+    # ==================================================
     # CHANGE PASSWORD
-    # =========================
+    # ==================================================
+
 
     def change_password(
         self,
         user_id: int,
         old_password: str,
-        new_password: str
-    ):
+        new_password: str,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
+
             user = uow.users.get_by_id(
-                uow.conn,
                 user_id
             )
 
+
             if not user:
+
                 raise UserNotFoundException()
+
 
 
             if not verify_password(
                 old_password,
-                user["password"]
+                user["password"],
             ):
-                raise Exception(
+
+                raise AuthenticationException(
                     "Old password is incorrect"
                 )
 
 
-            hashed_password = pwd_context.hash(
+
+            new_hash = hash_password(
                 new_password
             )
 
 
             return uow.users.update_password(
-                uow.conn,
                 user_id,
-                hashed_password
+                new_hash,
             )
 
 
-    # =========================
+
+    # ==================================================
     # UPDATE ROLE
-    # =========================
+    # ==================================================
+
 
     def update_role(
         self,
         user_id: int,
-        role: str
-    ):
+        role: str,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
+
             user = uow.users.update_role(
-                uow.conn,
                 user_id,
-                role
+                role,
             )
 
+
             if not user:
+
                 raise UserNotFoundException()
+
 
             return user
 
 
-    # =========================
+
+    # ==================================================
     # ACTIVATE USER
-    # =========================
+    # ==================================================
+
 
     def activate_user(
         self,
-        user_id: int
-    ):
+        user_id: int,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
-            return uow.users.activate_user(
-                uow.conn,
+
+            user = uow.users.activate_user(
                 user_id
             )
 
 
-    # =========================
+            if not user:
+
+                raise UserNotFoundException()
+
+
+            return user
+
+
+
+    # ==================================================
     # DEACTIVATE USER
-    # =========================
+    # ==================================================
+
 
     def deactivate_user(
         self,
-        user_id: int
-    ):
+        user_id: int,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
-            return uow.users.deactivate_user(
-                uow.conn,
+
+            user = uow.users.deactivate_user(
                 user_id
             )
 
 
-    # =========================
-    # DELETE USER
-    # =========================
+            if not user:
+
+                raise UserNotFoundException()
+
+
+            return user
+
+
+
+    # ==================================================
+    # SOFT DELETE USER
+    # ==================================================
+
 
     def delete_user(
         self,
-        user_id: int
-    ):
+        user_id: int,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
-            return uow.users.soft_delete_user(
-                uow.conn,
+
+            user = uow.users.soft_delete_user(
                 user_id
             )
 
 
-    # =========================
+            if not user:
+
+                raise UserNotFoundException()
+
+
+            return user
+
+
+
+    # ==================================================
     # RESTORE USER
-    # =========================
+    # ==================================================
+
 
     def restore_user(
         self,
-        user_id: int
-    ):
+        user_id: int,
+    ) -> dict[str, Any]:
+
 
         with UnitOfWork() as uow:
 
-            return uow.users.restore_user(
-                uow.conn,
+
+            user = uow.users.restore_user(
                 user_id
             )
+
+
+            if not user:
+
+                raise UserNotFoundException()
+
+
+            return user

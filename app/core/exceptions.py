@@ -1,23 +1,21 @@
 class AppException(Exception):
+    """
+    Base application exception.
+    """
 
-    status_code = 500
-    detail = "Internal server error"
-
+    status_code: int = 500
+    detail: str = "Internal server error"
 
     def __init__(
         self,
-        detail: str | None = None
+        detail: str | None = None,
     ):
-
         if detail:
-
             self.detail = detail
-
 
         super().__init__(
             self.detail
         )
-
 
 
 # =========================
@@ -26,9 +24,8 @@ class AppException(Exception):
 
 class DatabaseException(AppException):
 
-    status_code = 500
+    status_code: int = 500
     detail = "Database error"
-
 
 
 # =========================
@@ -37,23 +34,20 @@ class DatabaseException(AppException):
 
 class AuthenticationException(AppException):
 
-    status_code = 401
+    status_code: int = 401
     detail = "Authentication failed"
-
 
 
 class PermissionDeniedException(AppException):
 
-    status_code = 403
+    status_code: int = 403
     detail = "Permission denied"
-
 
 
 class UsernameAlreadyExistsException(AppException):
 
-    status_code = 400
+    status_code: int = 400
     detail = "Username already exists"
-
 
 
 # =========================
@@ -62,9 +56,8 @@ class UsernameAlreadyExistsException(AppException):
 
 class UserNotFoundException(AppException):
 
-    status_code = 404
+    status_code: int = 404
     detail = "User not found"
-
 
 
 # =========================
@@ -73,23 +66,20 @@ class UserNotFoundException(AppException):
 
 class ProductNotFoundException(AppException):
 
-    status_code = 404
+    status_code: int = 404
     detail = "Product not found"
-
 
 
 class ProductInactiveException(AppException):
 
-    status_code = 400
+    status_code: int = 400
     detail = "Product is inactive"
-
 
 
 class InsufficientStockException(AppException):
 
-    status_code = 400
+    status_code: int = 400
     detail = "Insufficient stock"
-
 
 
 # =========================
@@ -98,9 +88,8 @@ class InsufficientStockException(AppException):
 
 class CategoryNotFoundException(AppException):
 
-    status_code = 404
+    status_code: int = 404
     detail = "Category not found"
-
 
 
 # =========================
@@ -109,9 +98,8 @@ class CategoryNotFoundException(AppException):
 
 class OrderNotFoundException(AppException):
 
-    status_code = 404
+    status_code: int = 404
     detail = "Order not found"
-
 
 
 # =========================
@@ -120,5 +108,5 @@ class OrderNotFoundException(AppException):
 
 class ValidationException(AppException):
 
-    status_code = 422
+    status_code: int = 422
     detail = "Validation error"

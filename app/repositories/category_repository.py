@@ -3,6 +3,13 @@ from psycopg2.extras import RealDictCursor
 
 class CategoryRepository:
 
+    def __init__(self, conn):
+        self.conn = conn
+
+
+    # =========================
+    # BASE SELECT
+    # =========================
 
     CATEGORY_SELECT = """
         SELECT
@@ -19,14 +26,15 @@ class CategoryRepository:
     # CREATE CATEGORY
     # =========================
 
-    @staticmethod
     def create_category(
-        conn,
+        self,
         name: str,
         description: str | None
     ):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
                 """
@@ -58,15 +66,14 @@ class CategoryRepository:
     # GET ALL CATEGORIES
     # =========================
 
-    @staticmethod
-    def get_all_categories(
-        conn
-    ):
+    def get_all_categories(self):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
-                CategoryRepository.CATEGORY_SELECT +
+                self.CATEGORY_SELECT +
                 """
                 ORDER BY id ASC
                 """
@@ -80,16 +87,17 @@ class CategoryRepository:
     # GET CATEGORY BY ID
     # =========================
 
-    @staticmethod
     def get_category_by_id(
-        conn,
+        self,
         category_id: int
     ):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
-                CategoryRepository.CATEGORY_SELECT +
+                self.CATEGORY_SELECT +
                 """
                 WHERE id = %s
                 """,
@@ -104,15 +112,16 @@ class CategoryRepository:
     # UPDATE CATEGORY
     # =========================
 
-    @staticmethod
     def update_category(
-        conn,
+        self,
         category_id: int,
         name: str,
         description: str | None
     ):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
                 """
@@ -145,13 +154,14 @@ class CategoryRepository:
     # DELETE CATEGORY
     # =========================
 
-    @staticmethod
     def delete_category(
-        conn,
+        self,
         category_id: int
     ):
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
                 """

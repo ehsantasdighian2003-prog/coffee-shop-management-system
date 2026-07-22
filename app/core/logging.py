@@ -2,7 +2,12 @@ import logging
 import sys
 
 
-def setup_logging():
+def setup_logging() -> None:
+
+    logger = logging.getLogger()
+
+    if logger.handlers:
+        return
 
     logging.basicConfig(
         level=logging.INFO,
@@ -14,10 +19,12 @@ def setup_logging():
         ),
         handlers=[
             logging.StreamHandler(sys.stdout)
-        ]
+        ],
     )
 
 
-def get_logger(name: str):
+def get_logger(
+    name: str,
+) -> logging.Logger:
 
     return logging.getLogger(name)
