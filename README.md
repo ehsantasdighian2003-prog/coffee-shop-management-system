@@ -1,138 +1,90 @@
 # ☕ Coffee Shop Management System
 
-A production-ready backend system for managing coffee shop operations, built with **FastAPI**, **PostgreSQL**, and a clean layered architecture.
+<p align="center">
+  <b>Production-ready Coffee Shop Management System Backend</b><br>
+  Built with FastAPI, PostgreSQL and Enterprise-Level Backend Architecture
+</p>
 
-This project provides a scalable API for managing users, products, categories, and orders with authentication, authorization, transaction management, and enterprise-level backend practices.
+<p align="center">
 
----
+![Python](https://img.shields.io/badge/Python-3.13-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Production-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
+![JWT](https://img.shields.io/badge/Auth-JWT-orange)
+![Alembic](https://img.shields.io/badge/Migration-Alembic-red)
+![Pytest](https://img.shields.io/badge/Testing-Pytest-success)
 
-## 🚀 Version
-
-Current Release:
-
-```
-v1.0.0
-```
-
----
-
-# ✨ Features
-
-## 🔐 Authentication & Authorization
-
-* JWT-based authentication
-* Secure password hashing using Argon2
-* Protected API routes
-* Role-Based Access Control (RBAC)
-* Admin/User permission management
+</p>
 
 ---
 
-## 👤 User Management
+# 📌 Overview
 
-Implemented user management system including:
+Coffee Shop Management System is a production-oriented backend application designed to manage coffee shop operations including users, products, categories, and orders.
 
-* User registration
-* User authentication
-* User profile management
-* User activation/deactivation
-* Role management
-* Soft delete support
-* Password update
-* Account security fields
+The project is built with modern backend engineering principles focusing on:
 
-Supported user fields:
+- Clean Architecture
+- Scalability
+- Maintainability
+- Security
+- Separation of Concerns
+- Professional API Design
 
-* Username
-* Email
-* First name
-* Last name
-* Phone number
-* Role
-* Active status
-* Account timestamps
+The goal of this project is to demonstrate how a real-world backend system can be designed using enterprise-level practices.
 
 ---
+
+# 🚀 Key Features
+
+## 🔐 Authentication & Security
+
+- JWT Authentication
+- Secure password hashing using Argon2
+- Protected API endpoints
+- Role-Based Access Control (RBAC)
+- User authorization management
+
+
+## 👥 User Management
+
+- User registration
+- User authentication
+- Profile management
+- Role management
+- Account activation/deactivation
+- Soft delete support
+
 
 ## ☕ Product Management
 
-Complete product management module:
+- Complete CRUD operations
+- Product inventory management
+- Price management
+- Category relationship
+- Search functionality
+- Filtering
+- Sorting
+- Pagination
 
-* Create products
-* Update products
-* Delete products
-* Retrieve products
-* Stock management
-* Product activation status
-* Category relationship
 
-Advanced features:
+## 📂 Category Management
 
-* Pagination
-* Search
-* Filtering
-* Sorting
-* Metadata responses
+- Category CRUD operations
+- Product-category relationships
+- Category-based filtering
 
----
-
-## 🗂 Category Management
-
-Category module includes:
-
-* Category CRUD operations
-* Product-category relationship
-* Category based filtering
-
----
 
 ## 🛒 Order Management
 
-Complete order workflow:
-
-* Create orders
-* Retrieve orders
-* Update orders
-* Delete orders
-* Order items management
-* Automatic stock handling
-* Transaction-safe operations
-
-Advanced order features:
-
-* Pagination
-* Search
-* Filtering
-* Sorting
-* Total calculation
-
----
-
-# 🛠 Tech Stack
-
-## Backend
-
-* Python 3.13
-* FastAPI
-* Pydantic v2
-* Uvicorn
-
-## Database
-
-* PostgreSQL
-* psycopg2
-
-## Security
-
-* JWT Authentication
-* Argon2 Password Hashing
-* Role Based Access Control
-
-## Development Tools
-
-* Swagger / OpenAPI Documentation
-* Git
-* VS Code
+- Create and manage orders
+- Order items handling
+- Automatic stock validation
+- Database transactions
+- Order history
+- Pagination
+- Filtering
+- Sorting
 
 ---
 
@@ -140,102 +92,150 @@ Advanced order features:
 
 The project follows a layered architecture:
 
-```
-                API Request
-
-                    ↓
-
-              Router Layer
-
-                    ↓
-
-             Service Layer
-
-                    ↓
-
-           Repository Layer
-
-                    ↓
-
+                Client
+                  |
+                  |
+             FastAPI Routes
+                  |
+                  |
+            Service Layer
+                  |
+                  |
+          Repository Layer
+                  |
+                  |
           PostgreSQL Database
-```
+
+
+This architecture provides:
+
+- Clear responsibility separation
+- Easier testing
+- Better maintainability
+- Future scalability
 
 ---
 
-## Architectural Principles
+# 🧩 Design Patterns
 
-* Separation of concerns
-* Dependency injection
-* Repository Pattern
-* Service Layer Pattern
-* Transaction management
-* Clean code principles
+## Repository Pattern
 
----
-
-# 🔄 Unit Of Work Pattern
-
-Database transactions are managed using UnitOfWork.
+Database operations are isolated inside repository classes.
 
 Benefits:
 
-* Centralized transaction handling
-* Commit/Rollback management
-* Consistent repository lifecycle
-* Safer database operations
+- Cleaner business logic
+- Easier database changes
+- Better testability
 
-Example flow:
 
-```
-Request
-   |
-Service
-   |
-UnitOfWork
-   |
-Repository
-   |
-Database
-```
+## Service Layer Pattern
+
+Business rules are handled inside services instead of API routes.
+
+
+## Unit Of Work Pattern
+
+Transaction management layer responsible for:
+
+- Commit handling
+- Rollback handling
+- Repository coordination
+
+---
+
+# 🛠 Technology Stack
+
+## Backend
+
+- Python 3.13
+- FastAPI
+- Pydantic v2
+- Uvicorn
+
+
+## Database
+
+- PostgreSQL
+- psycopg2
+
+
+## Security
+
+- JWT
+- python-jose
+- Argon2
+
+
+## Database Migration
+
+- Alembic
+
+
+## Testing
+
+- Pytest
+- Pytest Coverage
 
 ---
 
 # 📂 Project Structure
 
-```
-coffee-shop-management-system/
+coffee-shop-management-system
 
 │
-├── app/
-│   │
-│   ├── core/
-│   │   ├── database.py
-│   │   ├── security.py
-│   │   ├── unit_of_work.py
-│   │   └── exceptions.py
-│   │
-│   ├── routes/
-│   │   ├── auth.py
-│   │   ├── users.py
-│   │   ├── products.py
-│   │   ├── categories.py
-│   │   └── orders.py
-│   │
-│   ├── services/
-│   │
-│   ├── repositories/
-│   │
-│   ├── schemas/
-│   │
-│   └── main.py
+├── app
 │
-├── alembic/
+├── core
+│ ├── database.py
+│ ├── security.py
+│ ├── exceptions.py
+│ ├── handlers.py
+│ └── unit_of_work.py
 │
-├── requirements.txt
-├── .env.example
-├── README.md
-└── .gitignore
-```
+├── routes
+│ ├── auth.py
+│ ├── users.py
+│ ├── products.py
+│ ├── categories.py
+│ └── orders.py
+│
+├── services
+│ ├── user_service.py
+│ ├── product_service.py
+│ ├── category_service.py
+│ └── order_service.py
+│
+├── repositories
+│ ├── user_repository.py
+│ ├── product_repository.py
+│ ├── category_repository.py
+│ └── order_repository.py
+│
+├── schemas
+│
+├── tests
+│
+├── migrations
+│
+└── main.py
+
+
+---
+
+# 📖 API Documentation
+
+The project provides interactive API documentation using Swagger UI.
+
+Available at:
+
+http://localhost:8000/docs
+
+
+Alternative documentation:
+
+http://localhost:8000/redoc
+
 
 ---
 
@@ -246,48 +246,27 @@ coffee-shop-management-system/
 ```bash
 git clone https://github.com/yourusername/coffee-shop-management-system.git
 
+Enter Project Directory
 cd coffee-shop-management-system
-```
 
----
-
-## Create Virtual Environment
-
-```bash
+Create Virtual Environment
 python -m venv venv
-```
 
 Activate:
 
 Windows:
 
-```bash
 venv\Scripts\activate
-```
 
-Linux / Mac:
+Linux/Mac:
 
-```bash
 source venv/bin/activate
-```
-
----
-
-## Install Dependencies
-
-```bash
+Install Dependencies
 pip install -r requirements.txt
-```
+🔧 Environment Configuration
 
----
+Create a .env file:
 
-# 🔐 Environment Variables
-
-Create a `.env` file:
-
-Example:
-
-```env
 DATABASE_URL=postgresql://username:password@localhost:5432/coffee_shop
 
 SECRET_KEY=your_secret_key
@@ -295,145 +274,88 @@ SECRET_KEY=your_secret_key
 ALGORITHM=HS256
 
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
----
-
-# 🗄 Database Setup
-
-Create PostgreSQL database:
-
-```
-coffee_shop
-```
+🗄 Database Setup
 
 Run migrations:
 
-```bash
 alembic upgrade head
-```
+▶️ Running Application
 
----
+Start development server:
 
-# ▶️ Running The Application
+uvicorn app.main:app --reload
 
-Start server:
+Application will be available at:
+
+http://localhost:8000
+🧪 Testing
+
+Run tests:
+
+pytest
+
+Run with coverage:
+
+pytest --cov
+📊 Current Status
+Backend Progress
+█████████░ 90%
+
+Completed:
+
+✅ Authentication System
+✅ JWT Security
+✅ User Management
+✅ Product Management
+✅ Category Management
+✅ Order Management
+✅ Repository Pattern
+✅ Service Layer
+✅ Unit Of Work
+✅ Exception Handling
+✅ Logging System
+✅ API Documentation
+✅ QA Testing
+
+🚀 Roadmap
+Version 1.0
+ Backend Foundation
+ Authentication
+ User Management
+ Product Management
+ Category Management
+ Order Management
+ Database Migration
+ Testing
+Future Improvements
+Docker Containerization
+CI/CD Pipeline
+Cloud Deployment
+Monitoring System
+Redis Caching
+React / Next.js Frontend
+Automated Deployment
+💡 Project Goals
+
+This project demonstrates:
+
+Professional backend architecture
+Secure API development
+Database design
+REST API engineering
+Production-oriented coding practices
+👨‍💻 Author
+
+Backend Developer Portfolio Project
+
+Built with ❤️ using:
+
+FastAPI + PostgreSQL + Python
+
+
+paste after:
 
 ```bash
-uvicorn app.main:app --reload
-```
-
-Application runs on:
-
-```
-http://127.0.0.1:8000
-```
-
----
-
-# 📖 API Documentation
-
-Swagger documentation:
-
-```
-http://127.0.0.1:8000/docs
-```
-
-OpenAPI schema:
-
-```
-http://127.0.0.1:8000/openapi.json
-```
-
----
-
-# 🔑 Authentication Flow
-
-1. Register user
-
-```
-POST /auth/register
-```
-
-2. Login
-
-```
-POST /auth/login
-```
-
-3. Receive JWT token
-
-4. Use token:
-
-```
-Authorization: Bearer <token>
-```
-
-5. Access protected endpoints
-
----
-
-# 🧪 Quality & Testing
-
-Completed:
-
-* API endpoint testing
-* Authentication testing
-* Authorization testing
-* CRUD validation
-* Negative scenario testing
-* Transaction testing
-
----
-
-# 🗺 Roadmap
-
-## Version 1.0.0 ✅
-
-Completed:
-
-* Authentication
-* User Management
-* Product Management
-* Category Management
-* Order Management
-* Security
-* Exception Handling
-* Logging
-* UnitOfWork
-* API Documentation
-
----
-
-## Version 1.1.0 🚧
-
-Planned:
-
-* Docker
-* Docker Compose
-* Automated Testing with Pytest
-* CI/CD Pipeline
-
----
-
-## Version 2.0.0 🚀
-
-Future:
-
-* React / Next.js Frontend
-* Cloud Deployment
-* Monitoring
-* Advanced Analytics
-* Notification System
-
----
-
-# 🤝 Contribution
-
-Contributions, suggestions, and improvements are welcome.
-
----
-
-# 📄 License
-
-This project is licensed under the MIT License.
+git add README.md
+git commit -m "docs: improve professional README"
+git push
