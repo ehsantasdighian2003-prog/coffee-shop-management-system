@@ -50,6 +50,12 @@ class UsernameAlreadyExistsException(AppException):
     detail = "Username already exists"
 
 
+class EmailAlreadyExistsException(AppException):
+
+    status_code: int = 400
+    detail = "Email already exists"
+        
+        
 # =========================
 # USERS
 # =========================

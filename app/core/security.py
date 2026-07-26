@@ -65,7 +65,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = (
 )
 
 
-security = HTTPBearer()
+security = HTTPBearer(
+    auto_error=False
+)
 
 
 # ==================================================
@@ -105,11 +107,16 @@ def create_access_token(
 # ==================================================
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> Dict[str, Any]:
     """
     Validate JWT token and return current user.
     """
+
+    if credentials is None:
+        raise AuthenticationException(
+            "Authentication credentials were not provided."
+        )
 
     try:
         token = credentials.credentials
@@ -120,36 +127,31 @@ def get_current_user(
             algorithms=[ALGORITHM],
         )
 
-        user_id = payload.get(
-            "user_id",
-        )
+        user_id = payload.get("user_id")
 
         if not user_id:
             raise AuthenticationException(
-                "Invalid token",
+                "Invalid token"
             )
 
         with UnitOfWork() as uow:
-
-            user = uow.users.get_by_id(
-                user_id,
-            )
+            user = uow.users.get_by_id(user_id)
 
         if not user:
             raise AuthenticationException(
-                "User not found",
+                "User not found"
             )
 
         if not user["is_active"]:
             raise AuthenticationException(
-                "User account is inactive",
+                "User account is inactive"
             )
 
         return user
 
     except JWTError:
         raise AuthenticationException(
-            "Invalid token",
+            "Invalid token"
         )
 
 

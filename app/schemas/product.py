@@ -1,6 +1,11 @@
 from decimal import Decimal
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import (
+    BaseModel,
+    Field,
+    ConfigDict,
+    field_serializer
+)
 
 
 # =========================
@@ -51,6 +56,7 @@ class ProductCreate(BaseModel):
     )
 
 
+
 # =========================
 # UPDATE PRODUCT
 # =========================
@@ -83,6 +89,7 @@ class ProductUpdate(BaseModel):
     )
 
 
+
 # =========================
 # PRODUCT RESPONSE
 # =========================
@@ -101,12 +108,25 @@ class ProductResponse(BaseModel):
 
     is_active: bool
 
+
+    # optional because repository may return nested category only
+    category_id: int | None = None
+
     category: CategorySimple | None = None
+
+
+    @field_serializer("price")
+    def serialize_price(
+        self,
+        value: Decimal
+    ):
+        return float(value)
 
 
     model_config = ConfigDict(
         from_attributes=True
     )
+
 
 
 # =========================
@@ -125,12 +145,23 @@ class ProductSummary(BaseModel):
 
     is_active: bool
 
+    category_id: int | None = None
+
     category: CategorySimple | None = None
+
+
+    @field_serializer("price")
+    def serialize_price(
+        self,
+        value: Decimal
+    ):
+        return float(value)
 
 
     model_config = ConfigDict(
         from_attributes=True
     )
+
 
 
 # =========================
@@ -146,6 +177,7 @@ class PaginationMeta(BaseModel):
     total: int
 
     pages: int
+
 
 
 # =========================

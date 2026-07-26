@@ -46,7 +46,34 @@ class AuthRepository:
             )
 
             return cur.fetchone()
-        
+
+    # ==================================================
+    # GET USER BY EMAIL
+    # ==================================================
+
+    def get_user_by_email(
+        self,
+        email: str,
+    ) -> dict[str, Any] | None:
+
+        with self._cursor() as cur:
+
+            cur.execute(
+                """
+                SELECT
+                    id,
+                    username,
+                    email,
+                    role,
+                    is_active
+                FROM users
+                WHERE email = %s
+                """,
+                (email,),
+            )
+
+            return cur.fetchone()
+
     # ==================================================
     # GET USER BY ID
     # ==================================================
@@ -119,7 +146,7 @@ class AuthRepository:
             )
 
             return cur.fetchone()
-        
+
     # ==================================================
     # UPDATE LAST LOGIN
     # ==================================================
@@ -134,8 +161,27 @@ class AuthRepository:
             cur.execute(
                 """
                 UPDATE users
-                SET
-                    last_login = CURRENT_TIMESTAMP
+                SET last_login = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (user_id,),
+            )
+
+    # ==================================================
+    # DEACTIVATE USER
+    # ==================================================
+
+    def deactivate_user(
+        self,
+        user_id: int,
+    ) -> None:
+
+        with self.conn.cursor() as cur:
+
+            cur.execute(
+                """
+                UPDATE users
+                SET is_active = FALSE
                 WHERE id = %s
                 """,
                 (user_id,),

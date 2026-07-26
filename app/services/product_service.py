@@ -90,7 +90,6 @@ class ProductService:
 
         with UnitOfWork() as uow:
 
-
             products = uow.products.get_products_paginated(
                 page,
                 limit,
@@ -132,7 +131,6 @@ class ProductService:
     ):
 
         with UnitOfWork() as uow:
-
 
             product = uow.products.get_product_by_id(
                 product_id
@@ -199,7 +197,6 @@ class ProductService:
 
         with UnitOfWork() as uow:
 
-
             deleted_product = uow.products.delete_product(
                 product_id
             )
@@ -209,7 +206,8 @@ class ProductService:
                 raise ProductNotFoundException()
 
 
+            # Return deleted resource id
+            # for REST response consistency
             return {
-                "message": "Product deleted successfully.",
-                "product_id": deleted_product["id"]
+                "id": deleted_product["id"]
             }

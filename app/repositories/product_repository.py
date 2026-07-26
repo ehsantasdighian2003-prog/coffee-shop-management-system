@@ -15,30 +15,31 @@ class ProductRepository:
     # =========================
 
     PRODUCT_SELECT = """
-        SELECT
-            products.id,
-            products.name,
-            products.description,
-            products.price,
-            products.stock,
-            products.is_active,
+    SELECT
+        products.id,
+        products.name,
+        products.description,
+        products.price,
+        products.stock,
+        products.is_active,
+        products.category_id,
 
-            CASE
-                WHEN categories.id IS NOT NULL
-                THEN json_build_object(
-                    'id',
-                    categories.id,
-                    'name',
-                    categories.name
-                )
-                ELSE NULL
-            END AS category
+        CASE
+            WHEN categories.id IS NOT NULL
+            THEN json_build_object(
+                'id',
+                categories.id,
+                'name',
+                categories.name
+            )
+            ELSE NULL
+        END AS category
 
-        FROM products
+    FROM products
 
-        LEFT JOIN categories
-        ON products.category_id = categories.id
-    """
+    LEFT JOIN categories
+    ON products.category_id = categories.id
+"""
 
 
 
