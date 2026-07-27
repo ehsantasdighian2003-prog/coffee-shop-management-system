@@ -1,4 +1,3 @@
-
 from app.core.database import get_connection
 from app.repositories.auth_repository import AuthRepository
 from app.repositories.category_repository import CategoryRepository

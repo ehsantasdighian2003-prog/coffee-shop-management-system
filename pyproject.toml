@@ -1,13 +1,6 @@
 [tool.black]
 line-length = 88
 target-version = ["py313"]
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | alembic/versions
-)/
-'''
 
 [tool.isort]
 profile = "black"
@@ -17,20 +10,18 @@ known_first_party = ["app", "tests"]
 [tool.ruff]
 line-length = 88
 target-version = "py313"
-exclude = [
-    ".git",
-    ".venv",
-    "alembic/versions"
-]
 
 [tool.ruff.lint]
 select = [
     "E",
     "F",
     "I",
-    "UP"
+    "UP",
 ]
 
 ignore = [
-    "E501"
+    "E501",
 ]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
