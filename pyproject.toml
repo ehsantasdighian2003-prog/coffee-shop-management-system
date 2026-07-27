@@ -17,6 +17,11 @@ profile = "black"
 line_length = 88
 known_first_party = ["app", "tests"]
 
+skip = [
+    "migrations",
+    "migrations/versions",
+]
+
 
 [tool.ruff]
 line-length = 88
@@ -37,7 +42,6 @@ select = [
     "I",
     "UP",
 ]
-
 
 ignore = [
     "E501",
