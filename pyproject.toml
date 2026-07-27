@@ -2,14 +2,31 @@
 line-length = 88
 target-version = ["py313"]
 
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | migrations/versions
+)/
+'''
+
+
 [tool.isort]
 profile = "black"
 line_length = 88
 known_first_party = ["app", "tests"]
 
+
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+
+exclude = [
+    ".git",
+    ".venv",
+    "migrations/versions",
+]
+
 
 [tool.ruff.lint]
 select = [
@@ -19,9 +36,7 @@ select = [
     "UP",
 ]
 
+
 ignore = [
     "E501",
 ]
-
-[tool.ruff.lint.isort]
-known-first-party = ["app", "tests"]
