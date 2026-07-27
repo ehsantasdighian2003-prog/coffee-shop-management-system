@@ -6,7 +6,6 @@ class CategoryRepository:
     def __init__(self, conn):
         self.conn = conn
 
-
     # =========================
     # BASE SELECT
     # =========================
@@ -21,20 +20,13 @@ class CategoryRepository:
         FROM categories
     """
 
-
     # =========================
     # CREATE CATEGORY
     # =========================
 
-    def create_category(
-        self,
-        name: str,
-        description: str | None
-    ):
+    def create_category(self, name: str, description: str | None):
 
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -52,15 +44,10 @@ class CategoryRepository:
                     description,
                     created_at
                 """,
-                (
-                    name,
-                    description
-                )
+                (name, description),
             )
 
             return cur.fetchone()
-
-
 
     # =========================
     # GET ALL CATEGORIES
@@ -68,60 +55,38 @@ class CategoryRepository:
 
     def get_all_categories(self):
 
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
-            cur.execute(
-                self.CATEGORY_SELECT +
-                """
+            cur.execute(self.CATEGORY_SELECT + """
                 ORDER BY id ASC
-                """
-            )
+                """)
 
             return cur.fetchall()
-
-
 
     # =========================
     # GET CATEGORY BY ID
     # =========================
 
-    def get_category_by_id(
-        self,
-        category_id: int
-    ):
+    def get_category_by_id(self, category_id: int):
 
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
-                self.CATEGORY_SELECT +
-                """
+                self.CATEGORY_SELECT + """
                 WHERE id = %s
                 """,
-                (category_id,)
+                (category_id,),
             )
 
             return cur.fetchone()
-
-
 
     # =========================
     # UPDATE CATEGORY
     # =========================
 
-    def update_category(
-        self,
-        category_id: int,
-        name: str,
-        description: str | None
-    ):
+    def update_category(self, category_id: int, name: str, description: str | None):
 
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -139,29 +104,18 @@ class CategoryRepository:
                     description,
                     created_at
                 """,
-                (
-                    name,
-                    description,
-                    category_id
-                )
+                (name, description, category_id),
             )
 
             return cur.fetchone()
-
-
 
     # =========================
     # DELETE CATEGORY
     # =========================
 
-    def delete_category(
-        self,
-        category_id: int
-    ):
+    def delete_category(self, category_id: int):
 
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -171,7 +125,7 @@ class CategoryRepository:
 
                 RETURNING id
                 """,
-                (category_id,)
+                (category_id,),
             )
 
             return cur.fetchone()

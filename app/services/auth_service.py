@@ -1,17 +1,16 @@
 from typing import Any
 
-from app.core.unit_of_work import UnitOfWork
+from app.core.exceptions import (
+    AuthenticationException,
+    EmailAlreadyExistsException,
+    UsernameAlreadyExistsException,
+)
 from app.core.security import (
+    create_access_token,
     hash_password,
     verify_password,
-    create_access_token,
 )
-
-from app.core.exceptions import (
-    UsernameAlreadyExistsException,
-    EmailAlreadyExistsException,
-    AuthenticationException,
-)
+from app.core.unit_of_work import UnitOfWork
 
 
 class AuthService:
@@ -32,9 +31,7 @@ class AuthService:
 
             # Check username
 
-            existing_user = uow.auth.get_user_by_username(
-                user_data.username
-            )
+            existing_user = uow.auth.get_user_by_username(user_data.username)
 
             if existing_user:
                 raise UsernameAlreadyExistsException()
@@ -43,18 +40,14 @@ class AuthService:
 
             if user_data.email:
 
-                existing_email = uow.auth.get_user_by_email(
-                    user_data.email
-                )
+                existing_email = uow.auth.get_user_by_email(user_data.email)
 
                 if existing_email:
                     raise EmailAlreadyExistsException()
 
             # Hash password
 
-            hashed_password = hash_password(
-                user_data.password
-            )
+            hashed_password = hash_password(user_data.password)
 
             # Create user
 
@@ -84,39 +77,27 @@ class AuthService:
 
         with UnitOfWork() as uow:
 
-            user = uow.auth.get_user_by_username(
-                user_data.username
-            )
+            user = uow.auth.get_user_by_username(user_data.username)
 
             if not user:
-                raise AuthenticationException(
-                    "Invalid username or password"
-                )
+                raise AuthenticationException("Invalid username or password")
 
             if not user["is_active"]:
-                raise AuthenticationException(
-                    "User account is inactive"
-                )
+                raise AuthenticationException("User account is inactive")
 
             if not verify_password(
                 user_data.password,
                 user["password"],
             ):
-                raise AuthenticationException(
-                    "Invalid username or password"
-                )
+                raise AuthenticationException("Invalid username or password")
 
-            uow.auth.update_last_login(
-                user["id"]
-            )
+            uow.auth.update_last_login(user["id"])
 
             payload = {
                 "user_id": user["id"],
             }
 
-            access_token = create_access_token(
-                payload
-            )
+            access_token = create_access_token(payload)
 
             return {
                 "access_token": access_token,

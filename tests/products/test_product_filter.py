@@ -1,17 +1,9 @@
-def create_category(
-    client,
-    admin_token
-):
+def create_category(client, admin_token):
 
     response = client.post(
         "/categories/",
-        headers={
-            "Authorization": f"Bearer {admin_token}"
-        },
-        json={
-            "name": "Test Category",
-            "description": "Category For Testing"
-        }
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"name": "Test Category", "description": "Category For Testing"},
     )
 
     assert response.status_code == 201
@@ -19,29 +11,19 @@ def create_category(
     return response.json()["id"]
 
 
-
-def create_product(
-    client,
-    admin_token,
-    name,
-    category_id,
-    price=10,
-    stock=10
-):
+def create_product(client, admin_token, name, category_id, price=10, stock=10):
 
     response = client.post(
         "/products/",
-        headers={
-            "Authorization": f"Bearer {admin_token}"
-        },
+        headers={"Authorization": f"Bearer {admin_token}"},
         json={
             "name": name,
             "description": "Filter Test Product",
             "price": price,
             "stock": stock,
             "is_active": True,
-            "category_id": category_id
-        }
+            "category_id": category_id,
+        },
     )
 
     assert response.status_code == 201
@@ -49,38 +31,20 @@ def create_product(
     return response.json()
 
 
-
 # =====================================================
 # SEARCH
 # =====================================================
 
-def test_search_products(
-    client,
-    admin_token
-):
 
-    category_id = create_category(
-        client,
-        admin_token
-    )
+def test_search_products(client, admin_token):
 
-    create_product(
-        client,
-        admin_token,
-        "Coffee Espresso",
-        category_id
-    )
+    category_id = create_category(client, admin_token)
 
-    create_product(
-        client,
-        admin_token,
-        "Green Tea",
-        category_id
-    )
+    create_product(client, admin_token, "Coffee Espresso", category_id)
 
-    response = client.get(
-        "/products/?search=Coffee"
-    )
+    create_product(client, admin_token, "Green Tea", category_id)
+
+    response = client.get("/products/?search=Coffee")
 
     assert response.status_code == 200
 
@@ -91,33 +55,20 @@ def test_search_products(
     assert "Coffee" in data["data"][0]["name"]
 
 
-
 # =====================================================
 # PAGINATION
 # =====================================================
 
-def test_products_pagination(
-    client,
-    admin_token
-):
 
-    category_id = create_category(
-        client,
-        admin_token
-    )
+def test_products_pagination(client, admin_token):
+
+    category_id = create_category(client, admin_token)
 
     for i in range(15):
 
-        create_product(
-            client,
-            admin_token,
-            f"Product {i}",
-            category_id
-        )
+        create_product(client, admin_token, f"Product {i}", category_id)
 
-    response = client.get(
-        "/products/?page=1&limit=10"
-    )
+    response = client.get("/products/?page=1&limit=10")
 
     assert response.status_code == 200
 
@@ -129,38 +80,20 @@ def test_products_pagination(
     assert data["meta"]["total"] >= 15
 
 
-
 # =====================================================
 # FILTER BY CATEGORY
 # =====================================================
 
-def test_filter_products_by_category(
-    client,
-    admin_token
-):
 
-    category_id = create_category(
-        client,
-        admin_token
-    )
+def test_filter_products_by_category(client, admin_token):
 
-    create_product(
-        client,
-        admin_token,
-        "Coffee",
-        category_id
-    )
+    category_id = create_category(client, admin_token)
 
-    create_product(
-        client,
-        admin_token,
-        "Latte",
-        category_id
-    )
+    create_product(client, admin_token, "Coffee", category_id)
 
-    response = client.get(
-        f"/products/?category_id={category_id}"
-    )
+    create_product(client, admin_token, "Latte", category_id)
+
+    response = client.get(f"/products/?category_id={category_id}")
 
     assert response.status_code == 200
 

@@ -2,20 +2,16 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-
     """
     Application configuration settings.
     Values are loaded from .env file.
     """
-
 
     # =========================
     # APPLICATION
     # =========================
 
     APP_NAME: str = "Coffee Shop Management System"
-
-
 
     # =========================
     # DATABASE
@@ -31,8 +27,6 @@ class Settings(BaseSettings):
 
     DATABASE_PORT: int = 5432
 
-
-
     # =========================
     # JWT
     # =========================
@@ -43,14 +37,11 @@ class Settings(BaseSettings):
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
-
-
     class Config:
 
         env_file = ".env"
 
         env_file_encoding = "utf-8"
-
 
 
 # =========================

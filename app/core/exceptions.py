@@ -13,14 +13,13 @@ class AppException(Exception):
         if detail:
             self.detail = detail
 
-        super().__init__(
-            self.detail
-        )
+        super().__init__(self.detail)
 
 
 # =========================
 # DATABASE
 # =========================
+
 
 class DatabaseException(AppException):
 
@@ -31,6 +30,7 @@ class DatabaseException(AppException):
 # =========================
 # AUTH
 # =========================
+
 
 class AuthenticationException(AppException):
 
@@ -54,11 +54,12 @@ class EmailAlreadyExistsException(AppException):
 
     status_code: int = 400
     detail = "Email already exists"
-        
-        
+
+
 # =========================
 # USERS
 # =========================
+
 
 class UserNotFoundException(AppException):
 
@@ -69,6 +70,7 @@ class UserNotFoundException(AppException):
 # =========================
 # PRODUCTS
 # =========================
+
 
 class ProductNotFoundException(AppException):
 
@@ -92,6 +94,7 @@ class InsufficientStockException(AppException):
 # CATEGORIES
 # =========================
 
+
 class CategoryNotFoundException(AppException):
 
     status_code: int = 404
@@ -102,6 +105,7 @@ class CategoryNotFoundException(AppException):
 # ORDERS
 # =========================
 
+
 class OrderNotFoundException(AppException):
 
     status_code: int = 404
@@ -111,6 +115,7 @@ class OrderNotFoundException(AppException):
 # =========================
 # VALIDATION
 # =========================
+
 
 class ValidationException(AppException):
 

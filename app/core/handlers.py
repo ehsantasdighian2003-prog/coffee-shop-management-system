@@ -8,7 +8,6 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.core.exceptions import AppException
 from app.core.logging import get_logger
 
-
 logger = get_logger(__name__)
 
 
@@ -16,15 +15,13 @@ logger = get_logger(__name__)
 # Custom Application Exceptions
 # =========================
 
+
 async def app_exception_handler(
     request: Request,
     exc: AppException,
 ) -> JSONResponse:
 
-    logger.warning(
-        f"Application error: {exc.detail} | "
-        f"path={request.url.path}"
-    )
+    logger.warning(f"Application error: {exc.detail} | " f"path={request.url.path}")
 
     return JSONResponse(
         status_code=exc.status_code,
@@ -39,15 +36,13 @@ async def app_exception_handler(
 # HTTP Exceptions
 # =========================
 
+
 async def http_exception_handler(
     request: Request,
     exc: StarletteHTTPException,
 ) -> JSONResponse:
 
-    logger.warning(
-        f"HTTP error: {exc.status_code} | "
-        f"path={request.url.path}"
-    )
+    logger.warning(f"HTTP error: {exc.status_code} | " f"path={request.url.path}")
 
     return JSONResponse(
         status_code=exc.status_code,
@@ -62,15 +57,14 @@ async def http_exception_handler(
 # Request Validation Errors
 # =========================
 
+
 async def validation_exception_handler(
     request: Request,
     exc: RequestValidationError,
 ) -> JSONResponse:
 
     logger.warning(
-        f"Validation error | "
-        f"path={request.url.path} | "
-        f"errors={exc.errors()}"
+        f"Validation error | " f"path={request.url.path} | " f"errors={exc.errors()}"
     )
 
     return JSONResponse(
@@ -87,15 +81,14 @@ async def validation_exception_handler(
 # Global Unexpected Errors
 # =========================
 
+
 async def general_exception_handler(
     request: Request,
     exc: Exception,
 ) -> JSONResponse:
 
     logger.error(
-        f"Unexpected error | "
-        f"path={request.url.path} | "
-        f"error={repr(exc)}",
+        f"Unexpected error | " f"path={request.url.path} | " f"error={repr(exc)}",
         exc_info=True,
     )
 

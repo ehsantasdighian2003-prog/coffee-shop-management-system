@@ -21,6 +21,4 @@ def test_user(auth_service):
         email="pytest@example.com",
     )
 
-    return auth_service.register(
-        user_data
-    )
+    return auth_service.register(user_data)

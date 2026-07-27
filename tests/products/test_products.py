@@ -1,8 +1,4 @@
-def test_create_product(
-    client,
-    auth_headers,
-    test_category
-):
+def test_create_product(client, auth_headers, test_category):
 
     response = client.post(
         "/products/",
@@ -13,16 +9,13 @@ def test_create_product(
             "price": 6,
             "stock": 20,
             "is_active": True,
-            "category_id": test_category["id"]
-        }
+            "category_id": test_category["id"],
+        },
     )
-
 
     assert response.status_code == 201
 
-
     data = response.json()
-
 
     assert data["name"] == "Latte"
     assert data["price"] == 6

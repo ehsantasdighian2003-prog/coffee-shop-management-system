@@ -1,44 +1,33 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field, ConfigDict
-
+from pydantic import BaseModel, ConfigDict, Field
 
 # =====================================================
 # REQUEST SCHEMAS
 # =====================================================
 
-class OrderItemCreate(BaseModel):
-    product_id: int = Field(
-        ...,
-        gt=0
-    )
 
-    quantity: int = Field(
-        ...,
-        gt=0
-    )
+class OrderItemCreate(BaseModel):
+    product_id: int = Field(..., gt=0)
+
+    quantity: int = Field(..., gt=0)
 
 
 class OrderCreate(BaseModel):
 
-    items: list[OrderItemCreate] = Field(
-        ...,
-        min_length=1
-    )
+    items: list[OrderItemCreate] = Field(..., min_length=1)
 
 
 class OrderUpdate(BaseModel):
 
-    items: list[OrderItemCreate] = Field(
-        ...,
-        min_length=1
-    )
+    items: list[OrderItemCreate] = Field(..., min_length=1)
 
 
 # =====================================================
 # RESPONSE SCHEMAS
 # =====================================================
+
 
 class OrderItemResponse(BaseModel):
 
@@ -48,10 +37,7 @@ class OrderItemResponse(BaseModel):
 
     price: Decimal
 
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderResponse(BaseModel):
@@ -64,10 +50,7 @@ class OrderResponse(BaseModel):
 
     items: list[OrderItemResponse]
 
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderSummary(BaseModel):
@@ -80,10 +63,7 @@ class OrderSummary(BaseModel):
 
     created_at: datetime
 
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderDetail(BaseModel):
@@ -98,15 +78,13 @@ class OrderDetail(BaseModel):
 
     items: list[OrderItemResponse]
 
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 # =====================================================
 # PAGINATION
 # =====================================================
+
 
 class PaginationMeta(BaseModel):
 
@@ -117,7 +95,6 @@ class PaginationMeta(BaseModel):
     total: int
 
     pages: int
-
 
 
 class PaginatedOrdersResponse(BaseModel):
@@ -132,7 +109,4 @@ class PaginatedOrdersResponse(BaseModel):
 
     data: list[OrderSummary]
 
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)

@@ -1,52 +1,40 @@
 """upgrade users table
 
 Revision ID: bcef9134359c
-Revises: 
+Revises:
 Create Date: 2026-07-16 19:38:27.729553
 
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'bcef9134359c'
-down_revision: Union[str, Sequence[str], None] = 'f70d7d7b2fae'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "bcef9134359c"
+down_revision: str | Sequence[str] | None = "f70d7d7b2fae"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
     """Upgrade schema."""
 
     op.add_column(
-        "users",
-        sa.Column(
-            "phone_number",
-            sa.String(length=20),
-            nullable=True
-        )
+        "users", sa.Column("phone_number", sa.String(length=20), nullable=True)
+    )
+
+    op.add_column(
+        "users", sa.Column("profile_image", sa.String(length=500), nullable=True)
     )
 
     op.add_column(
         "users",
         sa.Column(
-            "profile_image",
-            sa.String(length=500),
-            nullable=True
-        )
-    )
-
-    op.add_column(
-        "users",
-        sa.Column(
-            "email_verified",
-            sa.Boolean(),
-            nullable=False,
-            server_default=sa.false()
-        )
+            "email_verified", sa.Boolean(), nullable=False, server_default=sa.false()
+        ),
     )
 
     op.add_column(
@@ -55,27 +43,15 @@ def upgrade() -> None:
             "failed_login_attempts",
             sa.Integer(),
             nullable=False,
-            server_default=sa.text("0")
-        )
+            server_default=sa.text("0"),
+        ),
     )
 
-    op.add_column(
-        "users",
-        sa.Column(
-            "locked_until",
-            sa.DateTime(),
-            nullable=True
-        )
-    )
+    op.add_column("users", sa.Column("locked_until", sa.DateTime(), nullable=True))
 
-    op.add_column(
-        "users",
-        sa.Column(
-            "deleted_at",
-            sa.DateTime(),
-            nullable=True
-        )
-    )
+    op.add_column("users", sa.Column("deleted_at", sa.DateTime(), nullable=True))
+
+
 def downgrade() -> None:
     """Downgrade schema."""
 

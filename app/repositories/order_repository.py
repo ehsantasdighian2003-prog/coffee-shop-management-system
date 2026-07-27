@@ -7,28 +7,16 @@ class OrderRepository:
     order database operations.
     """
 
-
-    def __init__(
-        self,
-        conn
-    ):
+    def __init__(self, conn):
         self.conn = conn
-
-
 
     # =====================================================
     # PRODUCTS
     # =====================================================
 
+    def get_product_by_id(self, product_id: int):
 
-    def get_product_by_id(
-        self,
-        product_id: int
-    ):
-
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -40,27 +28,18 @@ class OrderRepository:
                 FROM products
                 WHERE id = %s
                 """,
-                (product_id,)
+                (product_id,),
             )
 
             return cur.fetchone()
-
-
 
     # =====================================================
     # CREATE ORDER
     # =====================================================
 
+    def create_order(self, user_id: int, total_price):
 
-    def create_order(
-        self,
-        user_id: int,
-        total_price
-    ):
-
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -74,23 +53,12 @@ class OrderRepository:
 
                 RETURNING id
                 """,
-                (
-                    user_id,
-                    total_price
-                )
+                (user_id, total_price),
             )
 
             return cur.fetchone()
 
-
-
-    def create_order_item(
-        self,
-        order_id: int,
-        product_id: int,
-        quantity: int,
-        price
-    ):
+    def create_order_item(self, order_id: int, product_id: int, quantity: int, price):
 
         with self.conn.cursor() as cur:
 
@@ -106,26 +74,14 @@ class OrderRepository:
 
                 VALUES (%s, %s, %s, %s)
                 """,
-                (
-                    order_id,
-                    product_id,
-                    quantity,
-                    price
-                )
+                (order_id, product_id, quantity, price),
             )
-
-
 
     # =====================================================
     # STOCK MANAGEMENT
     # =====================================================
 
-
-    def decrease_stock(
-        self,
-        product_id: int,
-        quantity: int
-    ):
+    def decrease_stock(self, product_id: int, quantity: int):
 
         with self.conn.cursor() as cur:
 
@@ -137,19 +93,10 @@ class OrderRepository:
 
                 WHERE id = %s
                 """,
-                (
-                    quantity,
-                    product_id
-                )
+                (quantity, product_id),
             )
 
-
-
-    def increase_stock(
-        self,
-        product_id: int,
-        quantity: int
-    ):
+    def increase_stock(self, product_id: int, quantity: int):
 
         with self.conn.cursor() as cur:
 
@@ -161,28 +108,16 @@ class OrderRepository:
 
                 WHERE id = %s
                 """,
-                (
-                    quantity,
-                    product_id
-                )
+                (quantity, product_id),
             )
-
-
 
     # =====================================================
     # UPDATE ORDER
     # =====================================================
 
+    def update_order(self, order_id: int, total_price):
 
-    def update_order(
-        self,
-        order_id: int,
-        total_price
-    ):
-
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -198,35 +133,18 @@ class OrderRepository:
                     total_price,
                     created_at
                 """,
-                (
-                    total_price,
-                    order_id
-                )
+                (total_price, order_id),
             )
 
             return cur.fetchone()
-
-
 
     # =====================================================
     # PAGINATION
     # =====================================================
 
+    def get_orders_paginated(self, limit, offset, search, min_total, max_total, sort):
 
-    def get_orders_paginated(
-        self,
-        limit,
-        offset,
-        search,
-        min_total,
-        max_total,
-        sort
-    ):
-
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
-
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             query = """
                 SELECT
@@ -240,95 +158,48 @@ class OrderRepository:
                 WHERE 1=1
             """
 
-
             params = []
-
 
             if search:
 
-                query += (
-                    " AND CAST(user_id AS TEXT) ILIKE %s"
-                )
+                query += " AND CAST(user_id AS TEXT) ILIKE %s"
 
-                params.append(
-                    f"%{search}%"
-                )
-
-
+                params.append(f"%{search}%")
 
             if min_total is not None:
 
-                query += (
-                    " AND total_price >= %s"
-                )
+                query += " AND total_price >= %s"
 
-                params.append(
-                    min_total
-                )
-
-
+                params.append(min_total)
 
             if max_total is not None:
 
-                query += (
-                    " AND total_price <= %s"
-                )
+                query += " AND total_price <= %s"
 
-                params.append(
-                    max_total
-                )
-
-
+                params.append(max_total)
 
             if sort == "desc":
 
-                query += (
-                    " ORDER BY created_at DESC"
-                )
+                query += " ORDER BY created_at DESC"
 
             else:
 
-                query += (
-                    " ORDER BY created_at ASC"
-                )
-
-
+                query += " ORDER BY created_at ASC"
 
             query += """
                 LIMIT %s
                 OFFSET %s
             """
 
+            params.extend([limit, offset])
 
-            params.extend(
-                [
-                    limit,
-                    offset
-                ]
-            )
-
-
-            cur.execute(
-                query,
-                params
-            )
-
+            cur.execute(query, params)
 
             return cur.fetchall()
 
+    def count_orders(self, search=None, min_total=None, max_total=None):
 
-
-    def count_orders(
-        self,
-        search=None,
-        min_total=None,
-        max_total=None
-    ):
-
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
-
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             query = """
                 SELECT COUNT(*) AS total
@@ -338,69 +209,37 @@ class OrderRepository:
                 WHERE 1=1
             """
 
-
             params = []
-
 
             if search:
 
-                query += (
-                    " AND CAST(user_id AS TEXT) ILIKE %s"
-                )
+                query += " AND CAST(user_id AS TEXT) ILIKE %s"
 
-                params.append(
-                    f"%{search}%"
-                )
-
-
+                params.append(f"%{search}%")
 
             if min_total is not None:
 
-                query += (
-                    " AND total_price >= %s"
-                )
+                query += " AND total_price >= %s"
 
-                params.append(
-                    min_total
-                )
-
-
+                params.append(min_total)
 
             if max_total is not None:
 
-                query += (
-                    " AND total_price <= %s"
-                )
+                query += " AND total_price <= %s"
 
-                params.append(
-                    max_total
-                )
+                params.append(max_total)
 
-
-
-            cur.execute(
-                query,
-                params
-            )
-
+            cur.execute(query, params)
 
             return cur.fetchone()["total"]
-
-
 
     # =====================================================
     # GET ORDERS
     # =====================================================
 
+    def get_order_by_id(self, order_id: int):
 
-    def get_order_by_id(
-        self,
-        order_id: int
-    ):
-
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -414,21 +253,14 @@ class OrderRepository:
 
                 WHERE id = %s
                 """,
-                (order_id,)
+                (order_id,),
             )
 
             return cur.fetchone()
 
+    def get_orders_by_user(self, user_id: int):
 
-
-    def get_orders_by_user(
-        self,
-        user_id: int
-    ):
-
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -444,21 +276,14 @@ class OrderRepository:
 
                 ORDER BY created_at DESC
                 """,
-                (user_id,)
+                (user_id,),
             )
 
             return cur.fetchall()
 
+    def get_order_items(self, order_id: int):
 
-
-    def get_order_items(
-        self,
-        order_id: int
-    ):
-
-        with self.conn.cursor(
-            cursor_factory=RealDictCursor
-        ) as cur:
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
 
             cur.execute(
                 """
@@ -473,22 +298,16 @@ class OrderRepository:
 
                 ORDER BY id
                 """,
-                (order_id,)
+                (order_id,),
             )
 
             return cur.fetchall()
-
-
 
     # =====================================================
     # DELETE
     # =====================================================
 
-
-    def delete_order_items(
-        self,
-        order_id: int
-    ):
+    def delete_order_items(self, order_id: int):
 
         with self.conn.cursor() as cur:
 
@@ -498,15 +317,10 @@ class OrderRepository:
 
                 WHERE order_id = %s
                 """,
-                (order_id,)
+                (order_id,),
             )
 
-
-
-    def delete_order(
-        self,
-        order_id: int
-    ):
+    def delete_order(self, order_id: int):
 
         with self.conn.cursor() as cur:
 
@@ -516,5 +330,5 @@ class OrderRepository:
 
                 WHERE id = %s
                 """,
-                (order_id,)
+                (order_id,),
             )

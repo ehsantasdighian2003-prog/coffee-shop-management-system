@@ -4,10 +4,10 @@ import psycopg2
 
 from app.core.config import settings
 
-
 # =========================
 # DATABASE CONNECTION
 # =========================
+
 
 def get_connection():
 
@@ -23,6 +23,7 @@ def get_connection():
 # =========================
 # CONNECTION MANAGER
 # =========================
+
 
 @contextmanager
 def get_db():

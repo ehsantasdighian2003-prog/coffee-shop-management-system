@@ -5,30 +5,23 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-
-from app.routes import users
-from app.routes.auth import router as auth_router
-from app.routes.categories import router as categories_router
-from app.routes.orders import router as orders_router
-from app.routes.products import router as products_router
-
-
 from app.core.config import settings
-
 from app.core.exceptions import AppException
-
 from app.core.handlers import (
     app_exception_handler,
     general_exception_handler,
     http_exception_handler,
     validation_exception_handler,
 )
-
 from app.core.logging import (
     get_logger,
     setup_logging,
 )
-
+from app.routes import users
+from app.routes.auth import router as auth_router
+from app.routes.categories import router as categories_router
+from app.routes.orders import router as orders_router
+from app.routes.products import router as products_router
 
 # =====================================================
 # LOGGING
@@ -39,24 +32,19 @@ setup_logging()
 logger = get_logger(__name__)
 
 
-
 # =====================================================
 # APPLICATION LIFECYCLE
 # =====================================================
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    logger.info(
-        "Coffee Shop API started successfully"
-    )
+    logger.info("Coffee Shop API started successfully")
 
     yield
 
-    logger.info(
-        "Coffee Shop API shutting down"
-    )
-
+    logger.info("Coffee Shop API shutting down")
 
 
 # =====================================================
@@ -66,13 +54,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
-    description=(
-        "Production-like Coffee Shop "
-        "Management System API"
-    ),
+    description=("Production-like Coffee Shop " "Management System API"),
     lifespan=lifespan,
 )
-
 
 
 # =====================================================
@@ -81,22 +65,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-
-    allow_origins=[
-        "*"
-    ],
-
+    allow_origins=["*"],
     allow_credentials=True,
-
-    allow_methods=[
-        "*"
-    ],
-
-    allow_headers=[
-        "*"
-    ],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
 
 
 # =====================================================
@@ -127,43 +100,30 @@ app.add_exception_handler(
 )
 
 
-
 # =====================================================
 # ROUTERS
 # =====================================================
 
-app.include_router(
-    auth_router
-)
+app.include_router(auth_router)
 
-app.include_router(
-    users.router
-)
+app.include_router(users.router)
 
-app.include_router(
-    categories_router
-)
+app.include_router(categories_router)
 
-app.include_router(
-    products_router
-)
+app.include_router(products_router)
 
-app.include_router(
-    orders_router
-)
-
+app.include_router(orders_router)
 
 
 # =====================================================
 # ROOT & HEALTH CHECK
 # =====================================================
 
+
 @app.get("/")
 def root():
 
-    logger.info(
-        "Root endpoint accessed"
-    )
+    logger.info("Root endpoint accessed")
 
     return {
         "success": True,
@@ -172,7 +132,6 @@ def root():
         "docs": "/docs",
         "redoc": "/redoc",
     }
-
 
 
 @app.get("/health")

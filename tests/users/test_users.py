@@ -16,18 +16,16 @@ def create_test_user(client):
     return response.json()["user_id"]
 
 
-
 # ==================================================
 # GET USER BY ID
 # ==================================================
+
 
 def test_get_user_by_id(client):
 
     user_id = create_test_user(client)
 
-    response = client.get(
-        f"/users/{user_id}"
-    )
+    response = client.get(f"/users/{user_id}")
 
     assert response.status_code == 200
 
@@ -37,18 +35,16 @@ def test_get_user_by_id(client):
     assert data["username"] == "user_test_1"
 
 
-
 # ==================================================
 # GET USERS LIST
 # ==================================================
+
 
 def test_get_users(client):
 
     create_test_user(client)
 
-    response = client.get(
-        "/users/"
-    )
+    response = client.get("/users/")
 
     assert response.status_code == 200
 
@@ -60,24 +56,22 @@ def test_get_users(client):
     assert data["meta"]["total"] >= 1
 
 
-
 # ==================================================
 # GET USER NOT FOUND
 # ==================================================
 
+
 def test_get_user_not_found(client):
 
-    response = client.get(
-        "/users/999999"
-    )
+    response = client.get("/users/999999")
 
     assert response.status_code == 404
-    
-    
-    
+
+
 # ==================================================
 # UPDATE USER PROFILE
 # ==================================================
+
 
 def test_update_user_profile(client):
 
@@ -102,12 +96,12 @@ def test_update_user_profile(client):
     assert data["first_name"] == "Updated"
     assert data["last_name"] == "User"
     assert data["email"] == "updated_user@example.com"
-    
-    
-    
+
+
 # ==================================================
 # CHANGE PASSWORD
 # ==================================================
+
 
 def test_change_password(client):
 
@@ -123,7 +117,6 @@ def test_change_password(client):
 
     assert response.status_code == 200
 
-
     # login with new password
 
     login_response = client.post(
@@ -134,24 +127,20 @@ def test_change_password(client):
         },
     )
 
-
     assert login_response.status_code == 200
 
     data = login_response.json()
 
     assert "access_token" in data
-    
-    
-    
+
+
 def test_update_user_role(client):
 
     user_id = create_test_user(client)
 
     response = client.patch(
         f"/users/{user_id}/role",
-        json={
-            "role": "admin"
-        },
+        json={"role": "admin"},
     )
 
     assert response.status_code == 200
@@ -159,16 +148,13 @@ def test_update_user_role(client):
     data = response.json()
 
     assert data["role"] == "admin"
-    
-    
-    
+
+
 def test_deactivate_user(client):
 
     user_id = create_test_user(client)
 
-    response = client.patch(
-        f"/users/{user_id}/deactivate"
-    )
+    response = client.patch(f"/users/{user_id}/deactivate")
 
     assert response.status_code == 200
 
@@ -177,35 +163,27 @@ def test_deactivate_user(client):
     assert data["is_active"] is False
 
 
-
 def test_activate_user(client):
 
     user_id = create_test_user(client)
 
     # deactivate first
-    client.patch(
-        f"/users/{user_id}/deactivate"
-    )
+    client.patch(f"/users/{user_id}/deactivate")
 
-    response = client.patch(
-        f"/users/{user_id}/activate"
-    )
+    response = client.patch(f"/users/{user_id}/activate")
 
     assert response.status_code == 200
 
     data = response.json()
 
     assert data["is_active"] is True
-    
-    
-    
+
+
 def test_soft_delete_user(client):
 
     user_id = create_test_user(client)
 
-    response = client.delete(
-        f"/users/{user_id}"
-    )
+    response = client.delete(f"/users/{user_id}")
 
     assert response.status_code == 200
 
@@ -215,19 +193,14 @@ def test_soft_delete_user(client):
     assert data["is_active"] is False
 
 
-
 def test_restore_user(client):
 
     user_id = create_test_user(client)
 
     # delete first
-    client.delete(
-        f"/users/{user_id}"
-    )
+    client.delete(f"/users/{user_id}")
 
-    response = client.patch(
-        f"/users/{user_id}/restore"
-    )
+    response = client.patch(f"/users/{user_id}/restore")
 
     assert response.status_code == 200
 

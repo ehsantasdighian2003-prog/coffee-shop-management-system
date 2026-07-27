@@ -18,8 +18,8 @@ def test_register_success(client):
 
     assert data["message"] == "User registered successfully."
     assert isinstance(data["user_id"], int)
-    
-    
+
+
 def test_register_duplicate_email(client):
 
     first_response = client.post(

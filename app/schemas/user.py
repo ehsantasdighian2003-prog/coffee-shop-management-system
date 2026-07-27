@@ -3,10 +3,10 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-
 # ==================================================
 # BASE USER SCHEMA
 # ==================================================
+
 
 class UserBase(BaseModel):
     """
@@ -20,10 +20,10 @@ class UserBase(BaseModel):
     profile_image: str | None = None
 
 
-
 # ==================================================
 # CREATE USER
 # ==================================================
+
 
 class UserCreate(BaseModel):
     """
@@ -40,10 +40,10 @@ class UserCreate(BaseModel):
     profile_image: str | None = None
 
 
-
 # ==================================================
 # UPDATE USER PROFILE
 # ==================================================
+
 
 class UserUpdate(UserBase):
     """
@@ -54,19 +54,19 @@ class UserUpdate(UserBase):
     pass
 
 
-
 # ==================================================
 # UPDATE USER ROLE
 # ==================================================
+
 
 class UpdateUserRoleRequest(BaseModel):
     role: Literal["admin", "user"]
 
 
-
 # ==================================================
 # CHANGE PASSWORD
 # ==================================================
+
 
 class ChangePasswordRequest(BaseModel):
 
@@ -74,10 +74,10 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
 
 
-
 # ==================================================
 # USER PROFILE RESPONSE
 # ==================================================
+
 
 class UserProfileResponse(BaseModel):
 
@@ -101,16 +101,13 @@ class UserProfileResponse(BaseModel):
 
     deleted_at: datetime | None = None
 
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
-
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ==================================================
 # PAGINATION METADATA
 # ==================================================
+
 
 class PaginationMeta(BaseModel):
 
@@ -123,10 +120,10 @@ class PaginationMeta(BaseModel):
     pages: int
 
 
-
 # ==================================================
 # USER LIST RESPONSE
 # ==================================================
+
 
 class UserListResponse(BaseModel):
 
@@ -135,10 +132,10 @@ class UserListResponse(BaseModel):
     meta: PaginationMeta
 
 
-
 # ==================================================
 # USER STATUS RESPONSE
 # ==================================================
+
 
 class UserStatusResponse(BaseModel):
 

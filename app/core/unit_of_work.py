@@ -1,12 +1,10 @@
-from typing import Optional, Type
 
 from app.core.database import get_connection
-
-from app.repositories.product_repository import ProductRepository
-from app.repositories.order_repository import OrderRepository
-from app.repositories.category_repository import CategoryRepository
-from app.repositories.user_repository import UserRepository
 from app.repositories.auth_repository import AuthRepository
+from app.repositories.category_repository import CategoryRepository
+from app.repositories.order_repository import OrderRepository
+from app.repositories.product_repository import ProductRepository
+from app.repositories.user_repository import UserRepository
 
 
 class UnitOfWork:
@@ -20,44 +18,32 @@ class UnitOfWork:
 
         self.conn = None
 
-        self.products: Optional[ProductRepository] = None
-        self.orders: Optional[OrderRepository] = None
-        self.categories: Optional[CategoryRepository] = None
-        self.users: Optional[UserRepository] = None
-        self.auth: Optional[AuthRepository] = None
-
+        self.products: ProductRepository | None = None
+        self.orders: OrderRepository | None = None
+        self.categories: CategoryRepository | None = None
+        self.users: UserRepository | None = None
+        self.auth: AuthRepository | None = None
 
     def __enter__(self) -> "UnitOfWork":
 
         self.conn = get_connection()
 
-        self.products = ProductRepository(
-            self.conn
-        )
+        self.products = ProductRepository(self.conn)
 
-        self.orders = OrderRepository(
-            self.conn
-        )
+        self.orders = OrderRepository(self.conn)
 
-        self.categories = CategoryRepository(
-            self.conn
-        )
+        self.categories = CategoryRepository(self.conn)
 
-        self.users = UserRepository(
-            self.conn
-        )
+        self.users = UserRepository(self.conn)
 
-        self.auth = AuthRepository(
-            self.conn
-        )
+        self.auth = AuthRepository(self.conn)
 
         return self
 
-
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
         traceback,
     ) -> None:
 

@@ -1,12 +1,11 @@
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from fastapi import Depends
 from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBearer,
 )
-
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -16,7 +15,6 @@ from app.core.exceptions import (
     PermissionDeniedException,
 )
 from app.core.unit_of_work import UnitOfWork
-
 
 # ==================================================
 # PASSWORD HASHING
@@ -60,19 +58,16 @@ def hash_password(
 
 SECRET_KEY = settings.JWT_SECRET_KEY
 ALGORITHM = settings.JWT_ALGORITHM
-ACCESS_TOKEN_EXPIRE_MINUTES = (
-    settings.ACCESS_TOKEN_EXPIRE_MINUTES
-)
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 
-security = HTTPBearer(
-    auto_error=False
-)
+security = HTTPBearer(auto_error=False)
 
 
 # ==================================================
 # CREATE ACCESS TOKEN
 # ==================================================
+
 
 def create_access_token(
     data: dict,
@@ -84,7 +79,7 @@ def create_access_token(
     payload = data.copy()
 
     expire = datetime.now(
-        timezone.utc,
+        UTC,
     ) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES,
     )
@@ -106,17 +101,16 @@ def create_access_token(
 # CURRENT USER
 # ==================================================
 
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Validate JWT token and return current user.
     """
 
     if credentials is None:
-        raise AuthenticationException(
-            "Authentication credentials were not provided."
-        )
+        raise AuthenticationException("Authentication credentials were not provided.")
 
     try:
         token = credentials.credentials
@@ -130,38 +124,31 @@ def get_current_user(
         user_id = payload.get("user_id")
 
         if not user_id:
-            raise AuthenticationException(
-                "Invalid token"
-            )
+            raise AuthenticationException("Invalid token")
 
         with UnitOfWork() as uow:
             user = uow.users.get_by_id(user_id)
 
         if not user:
-            raise AuthenticationException(
-                "User not found"
-            )
+            raise AuthenticationException("User not found")
 
         if not user["is_active"]:
-            raise AuthenticationException(
-                "User account is inactive"
-            )
+            raise AuthenticationException("User account is inactive")
 
         return user
 
     except JWTError:
-        raise AuthenticationException(
-            "Invalid token"
-        )
+        raise AuthenticationException("Invalid token")
 
 
 # ==================================================
 # ROLE CHECK
 # ==================================================
 
+
 def admin_required(
-    user: Dict[str, Any] = Depends(get_current_user),
-) -> Dict[str, Any]:
+    user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
     """
     Allow access only for admin users.
     """

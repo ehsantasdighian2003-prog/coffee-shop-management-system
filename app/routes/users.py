@@ -10,7 +10,6 @@ from app.schemas.user import (
 )
 from app.services.user_service import UserService
 
-
 router = APIRouter(
     prefix="/users",
     tags=["Users"],
@@ -27,6 +26,7 @@ def get_user_service() -> UserService:
 # ==================================================
 # GET USER BY ID
 # ==================================================
+
 
 @router.get(
     "/{user_id}",
@@ -46,6 +46,7 @@ def get_user(
 # ==================================================
 # GET USERS PAGINATED
 # ==================================================
+
 
 @router.get(
     "/",
@@ -68,6 +69,7 @@ def get_users(
 # UPDATE PROFILE
 # ==================================================
 
+
 @router.put(
     "/{user_id}",
     response_model=UserProfileResponse,
@@ -83,10 +85,12 @@ def update_user(
         user_id,
         data,
     )
-    
+
+
 # ==================================================
 # CHANGE PASSWORD
 # ==================================================
+
 
 @router.patch(
     "/{user_id}/password",
@@ -109,6 +113,7 @@ def change_password(
 # ==================================================
 # UPDATE ROLE
 # ==================================================
+
 
 @router.patch(
     "/{user_id}/role",
@@ -135,7 +140,6 @@ def update_role(
 @router.patch(
     "/{user_id}/activate",
     response_model=UserProfileResponse,
-
     status_code=status.HTTP_200_OK,
 )
 def activate_user(
@@ -146,10 +150,12 @@ def activate_user(
     return service.activate_user(
         user_id,
     )
-    
+
+
 # ==================================================
 # DEACTIVATE USER
 # ==================================================
+
 
 @router.patch(
     "/{user_id}/deactivate",
@@ -170,6 +176,7 @@ def deactivate_user(
 # DELETE USER (SOFT DELETE)
 # ==================================================
 
+
 @router.delete(
     "/{user_id}",
     response_model=UserProfileResponse,
@@ -184,9 +191,11 @@ def delete_user(
         user_id,
     )
 
+
 # ==================================================
 # RESTORE USER
 # ==================================================
+
 
 @router.patch(
     "/{user_id}/restore",
