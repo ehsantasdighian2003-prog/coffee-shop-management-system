@@ -1,8 +1,8 @@
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from alembic import context
 from app.core.config import settings
 
 # Alembic Config object
@@ -29,11 +29,6 @@ if config.config_file_name is not None:
 
 
 # Metadata for Alembic autogenerate
-# Import your Base metadata here if needed
-# Example:
-# from app.models.base import Base
-# target_metadata = Base.metadata
-
 target_metadata = None
 
 
