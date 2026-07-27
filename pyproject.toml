@@ -6,7 +6,8 @@ exclude = '''
 /(
     \.git
   | \.venv
-  | migrations/versions
+  | migrations
+  | alembic/versions
 )/
 '''
 
@@ -24,7 +25,8 @@ target-version = "py313"
 exclude = [
     ".git",
     ".venv",
-    "migrations/versions",
+    "migrations",
+    "alembic/versions",
 ]
 
 
