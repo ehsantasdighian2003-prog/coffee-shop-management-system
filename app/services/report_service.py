@@ -2,7 +2,10 @@ from decimal import Decimal
 
 from app.core.database import get_connection
 from app.repositories.report_repository import ReportRepository
-from app.schemas.report import SalesReport
+from app.schemas.report import (
+    SalesReport,
+    DashboardReport,
+)
 
 
 class ReportService:
@@ -39,6 +42,26 @@ class ReportService:
                 average_order_value=self.normalize_decimal(
                     data["average_order_value"]
                 ),
+            )
+
+        finally:
+            conn.close()
+            
+            
+    def get_dashboard_report(self) -> DashboardReport:
+
+        conn = get_connection()
+
+        try:
+            repository = ReportRepository(conn)
+
+            data = repository.get_dashboard_statistics()
+
+            return DashboardReport(
+                users=data["users"],
+                products=data["products"],
+                categories=data["categories"],
+                orders=data["orders"],
             )
 
         finally:

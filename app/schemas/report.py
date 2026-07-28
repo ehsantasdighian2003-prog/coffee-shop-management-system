@@ -14,3 +14,10 @@ class SalesReport(BaseModel):
     total_orders: int
     total_revenue: Decimal
     average_order_value: Decimal
+    
+    
+class DashboardReport(BaseModel):
+    users: int
+    products: int
+    categories: int
+    orders: int
