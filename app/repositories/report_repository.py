@@ -56,3 +56,32 @@ class ReportRepository:
             )
 
             return cur.fetchone()
+        
+        
+    def get_sales_report(self):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    COUNT(id) AS total_orders,
+
+                    COALESCE(
+                        SUM(total_price),
+                        0
+                    ) AS total_revenue,
+
+                    COALESCE(
+                        AVG(total_price),
+                        0
+                    ) AS average_order_value
+
+                FROM orders
+                """
+            )
+
+            return cur.fetchone()
