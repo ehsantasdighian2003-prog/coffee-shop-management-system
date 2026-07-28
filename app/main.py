@@ -22,6 +22,7 @@ from app.routes.auth import router as auth_router
 from app.routes.categories import router as categories_router
 from app.routes.orders import router as orders_router
 from app.routes.products import router as products_router
+from app.routes.reports import router as reports_router
 
 # =====================================================
 # LOGGING
@@ -30,7 +31,6 @@ from app.routes.products import router as products_router
 setup_logging()
 
 logger = get_logger(__name__)
-
 
 # =====================================================
 # APPLICATION LIFECYCLE
@@ -54,10 +54,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
-    description=("Production-like Coffee Shop " "Management System API"),
+    description="Production-like Coffee Shop Management System API",
     lifespan=lifespan,
 )
-
 
 # =====================================================
 # CORS
@@ -71,7 +70,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # =====================================================
 # EXCEPTION HANDLERS
 # =====================================================
@@ -81,24 +79,20 @@ app.add_exception_handler(
     app_exception_handler,
 )
 
-
 app.add_exception_handler(
     StarletteHTTPException,
     http_exception_handler,
 )
-
 
 app.add_exception_handler(
     RequestValidationError,
     validation_exception_handler,
 )
 
-
 app.add_exception_handler(
     Exception,
     general_exception_handler,
 )
-
 
 # =====================================================
 # ROUTERS
@@ -114,9 +108,10 @@ app.include_router(products_router)
 
 app.include_router(orders_router)
 
+app.include_router(reports_router)
 
 # =====================================================
-# ROOT & HEALTH CHECK
+# ROOT
 # =====================================================
 
 
@@ -132,6 +127,11 @@ def root():
         "docs": "/docs",
         "redoc": "/redoc",
     }
+
+
+# =====================================================
+# HEALTH CHECK
+# =====================================================
 
 
 @app.get("/health")

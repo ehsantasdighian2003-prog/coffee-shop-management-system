@@ -1,8 +1,10 @@
 from app.core.database import get_connection
+
 from app.repositories.auth_repository import AuthRepository
 from app.repositories.category_repository import CategoryRepository
 from app.repositories.order_repository import OrderRepository
 from app.repositories.product_repository import ProductRepository
+from app.repositories.report_repository import ReportRepository
 from app.repositories.user_repository import UserRepository
 
 
@@ -22,6 +24,8 @@ class UnitOfWork:
         self.categories: CategoryRepository | None = None
         self.users: UserRepository | None = None
         self.auth: AuthRepository | None = None
+        self.reports: ReportRepository | None = None
+
 
     def __enter__(self) -> "UnitOfWork":
 
@@ -37,7 +41,10 @@ class UnitOfWork:
 
         self.auth = AuthRepository(self.conn)
 
+        self.reports = ReportRepository(self.conn)
+
         return self
+
 
     def __exit__(
         self,
