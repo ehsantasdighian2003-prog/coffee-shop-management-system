@@ -6,11 +6,14 @@ from psycopg2.extras import RealDictCursor
 
 class ReportRepository:
     """
-    Repository responsible for dashboard reports.
+    Repository responsible for application reports.
     """
 
-    def __init__(self, conn: connection):
 
+    def __init__(
+        self,
+        conn: connection
+    ):
         self.conn = conn
 
 
@@ -50,15 +53,37 @@ class ReportRepository:
                     (
                         SELECT COUNT(*)
                         FROM orders
-                    ) AS orders
+                    ) AS orders,
+
+
+                    (
+                        SELECT COALESCE(
+                            SUM(total_price),
+                            0
+                        )
+                        FROM orders
+                    ) AS total_revenue,
+
+
+                    (
+                        SELECT COALESCE(
+                            AVG(total_price),
+                            0
+                        )
+                        FROM orders
+                    ) AS average_order_value
 
                 """
             )
 
             return cur.fetchone()
-        
-        
-    def get_sales_report(self):
+
+
+    # ==================================================
+    # SALES REPORT
+    # ==================================================
+
+    def get_sales_report(self) -> dict[str, Any]:
 
         with self.conn.cursor(
             cursor_factory=RealDictCursor
@@ -70,15 +95,18 @@ class ReportRepository:
 
                     COUNT(id) AS total_orders,
 
+
                     COALESCE(
                         SUM(total_price),
                         0
                     ) AS total_revenue,
 
+
                     COALESCE(
                         AVG(total_price),
                         0
                     ) AS average_order_value
+
 
                 FROM orders
                 """
