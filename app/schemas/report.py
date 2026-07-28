@@ -62,3 +62,17 @@ class TopProductReport(BaseModel):
     product_name: str
     total_sold: int
     revenue: Decimal
+    
+    
+class MonthlySalesReport(BaseModel):
+    """
+    Monthly sales report schema.
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    month: str
+    total_orders: int
+    revenue: Decimal

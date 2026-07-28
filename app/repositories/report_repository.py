@@ -166,3 +166,52 @@ class ReportRepository:
             )
 
             return cur.fetchall()
+        
+        
+    # ==================================================
+    # MONTHLY SALES REPORT
+    # ==================================================
+
+    def get_monthly_sales_report(
+        self
+    ) -> list[dict[str, Any]]:
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    TO_CHAR(
+                        created_at,
+                        'YYYY-MM'
+                    ) AS month,
+
+
+                    COUNT(id) AS total_orders,
+
+
+                    COALESCE(
+                        SUM(total_price),
+                        0
+                    ) AS revenue
+
+
+                FROM orders
+
+
+                GROUP BY
+                    TO_CHAR(
+                        created_at,
+                        'YYYY-MM'
+                    )
+
+
+                ORDER BY month ASC;
+
+                """
+            )
+
+            return cur.fetchall()

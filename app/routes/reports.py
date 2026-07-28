@@ -4,6 +4,7 @@ from app.schemas.report import (
     SalesReport,
     DashboardReport,
     TopProductReport,
+    MonthlySalesReport,
 )
 
 from app.services.report_service import ReportService
@@ -59,3 +60,16 @@ def get_top_products(
     return report_service.get_top_products(
         limit
     )
+    
+    
+# ==================================================
+# MONTHLY SALES REPORT
+# ==================================================
+
+@router.get(
+    "/monthly-sales",
+    response_model=list[MonthlySalesReport]
+)
+def get_monthly_sales_report():
+
+    return report_service.get_monthly_sales_report()

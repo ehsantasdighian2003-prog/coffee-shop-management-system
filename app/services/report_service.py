@@ -4,8 +4,10 @@ from app.core.database import get_connection
 from app.repositories.report_repository import ReportRepository
 from app.schemas.report import (
     DashboardReport,
+    MonthlySalesReport,
     SalesReport,
     TopProductReport,
+    MonthlySalesReport,
 )
 
 
@@ -135,6 +137,41 @@ class ReportService:
 
                 for item in data
 
+            ]
+
+        finally:
+            conn.close()
+            
+            
+    # ==================================================
+    # MONTHLY SALES REPORT
+    # ==================================================
+
+    def get_monthly_sales_report(
+        self
+    ) -> list[MonthlySalesReport]:
+
+        conn = get_connection()
+
+        try:
+
+            repository = ReportRepository(conn)
+
+            data = repository.get_monthly_sales_report()
+
+
+            return [
+                MonthlySalesReport(
+                    month=item["month"],
+
+                    total_orders=item["total_orders"],
+
+                    revenue=self.normalize_decimal(
+                        item["revenue"]
+                    ),
+                )
+
+                for item in data
             ]
 
         finally:
