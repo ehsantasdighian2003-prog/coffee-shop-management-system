@@ -76,3 +76,23 @@ class MonthlySalesReport(BaseModel):
     month: str
     total_orders: int
     revenue: Decimal
+    
+    
+# ==================================================
+# CUSTOMER ANALYTICS REPORT
+# ==================================================
+
+class CustomerReport(BaseModel):
+    """
+    Customer analytics report schema.
+    """
+
+    customer_id: int
+
+    username: str
+
+    total_orders: int
+
+    total_spent: Decimal
+
+    average_order_value: Decimal

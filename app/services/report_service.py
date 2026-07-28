@@ -3,6 +3,7 @@ from decimal import Decimal
 from app.core.database import get_connection
 from app.repositories.report_repository import ReportRepository
 from app.schemas.report import (
+    CustomerReport,
     DashboardReport,
     MonthlySalesReport,
     SalesReport,
@@ -171,6 +172,41 @@ class ReportService:
                     ),
                 )
 
+                for item in data
+            ]
+
+        finally:
+            conn.close()
+            
+            
+    # ==================================================
+    # CUSTOMER ANALYTICS REPORT
+    # ==================================================
+
+    def get_customer_report(
+        self,
+    ) -> list[CustomerReport]:
+
+        conn = get_connection()
+
+        try:
+
+            repository = ReportRepository(conn)
+
+            data = repository.get_customer_analytics()
+
+            return [
+                CustomerReport(
+                    customer_id=item["customer_id"],
+                    username=item["username"],
+                    total_orders=item["total_orders"],
+                    total_spent=self.normalize_decimal(
+                        item["total_spent"]
+                    ),
+                    average_order_value=self.normalize_decimal(
+                        item["average_order_value"]
+                    ),
+                )
                 for item in data
             ]
 

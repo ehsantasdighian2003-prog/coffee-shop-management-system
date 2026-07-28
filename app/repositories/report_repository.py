@@ -215,3 +215,64 @@ class ReportRepository:
             )
 
             return cur.fetchall()
+        
+        
+    # ==================================================
+    # CUSTOMER ANALYTICS REPORT
+    # ==================================================
+
+    def get_customer_analytics(self):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    u.id AS customer_id,
+
+                    u.username,
+
+
+                    COUNT(o.id) AS total_orders,
+
+
+                    COALESCE(
+                        SUM(o.total_price),
+                        0
+                    ) AS total_spent,
+
+
+                    COALESCE(
+                        AVG(o.total_price),
+                        0
+                    ) AS average_order_value
+
+
+                FROM users u
+
+
+                LEFT JOIN orders o
+
+                    ON o.user_id = u.id
+
+
+                WHERE u.deleted_at IS NULL
+
+
+                GROUP BY
+                    u.id,
+                    u.username
+
+
+                HAVING COUNT(o.id) > 0
+
+
+                ORDER BY total_spent DESC
+
+                """
+            )
+
+            return cur.fetchall()

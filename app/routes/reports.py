@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 
 from app.schemas.report import (
-    SalesReport,
+    CustomerReport,
     DashboardReport,
-    TopProductReport,
     MonthlySalesReport,
+    SalesReport,
+    TopProductReport,
 )
 
 from app.services.report_service import ReportService
@@ -73,3 +74,12 @@ def get_top_products(
 def get_monthly_sales_report():
 
     return report_service.get_monthly_sales_report()
+
+
+@router.get(
+    "/customers",
+    response_model=list[CustomerReport]
+)
+def get_customer_report():
+
+    return report_service.get_customer_report()
