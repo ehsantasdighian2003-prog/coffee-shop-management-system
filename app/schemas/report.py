@@ -3,9 +3,14 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict
 
 
+# =====================================================
+# SALES REPORT
+# =====================================================
+
+
 class SalesReport(BaseModel):
     """
-    Sales report response schema.
+    Sales statistics report schema.
     """
 
     model_config = ConfigDict(
@@ -17,9 +22,14 @@ class SalesReport(BaseModel):
     average_order_value: Decimal
 
 
+# =====================================================
+# DASHBOARD REPORT
+# =====================================================
+
+
 class DashboardReport(BaseModel):
     """
-    Dashboard statistics response schema.
+    Main dashboard statistics schema.
     """
 
     model_config = ConfigDict(
@@ -30,5 +40,25 @@ class DashboardReport(BaseModel):
     products: int
     categories: int
     orders: int
+
     total_revenue: Decimal
     average_order_value: Decimal
+
+
+# =====================================================
+# TOP PRODUCTS REPORT
+# =====================================================
+
+
+class TopProductReport(BaseModel):
+    """
+    Top selling products report schema.
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    product_name: str
+    total_sold: int
+    revenue: Decimal

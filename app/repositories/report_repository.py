@@ -9,7 +9,6 @@ class ReportRepository:
     Repository responsible for application reports.
     """
 
-
     def __init__(
         self,
         conn: connection
@@ -113,3 +112,57 @@ class ReportRepository:
             )
 
             return cur.fetchone()
+
+
+    # ==================================================
+    # TOP PRODUCTS REPORT
+    # ==================================================
+
+    def get_top_products(
+        self,
+        limit: int = 5
+    ) -> list[dict[str, Any]]:
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    p.name AS product_name,
+
+
+                    SUM(oi.quantity) AS total_sold,
+
+
+                    SUM(
+                        oi.quantity * oi.price
+                    ) AS revenue
+
+
+                FROM order_items oi
+
+
+                INNER JOIN products p
+                    ON p.id = oi.product_id
+
+
+                INNER JOIN orders o
+                    ON o.id = oi.order_id
+
+
+                GROUP BY p.name
+
+
+                ORDER BY total_sold DESC
+
+
+                LIMIT %s;
+
+                """,
+                (limit,)
+            )
+
+            return cur.fetchall()

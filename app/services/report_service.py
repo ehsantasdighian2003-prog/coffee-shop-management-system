@@ -5,6 +5,7 @@ from app.repositories.report_repository import ReportRepository
 from app.schemas.report import (
     DashboardReport,
     SalesReport,
+    TopProductReport,
 )
 
 
@@ -44,6 +45,7 @@ class ReportService:
 
 
             return SalesReport(
+
                 total_orders=data["total_orders"],
 
                 total_revenue=self.normalize_decimal(
@@ -84,17 +86,56 @@ class ReportService:
 
                 orders=data["orders"],
 
-
                 total_revenue=self.normalize_decimal(
                     data["total_revenue"]
                 ),
 
-
                 average_order_value=self.normalize_decimal(
                     data["average_order_value"]
                 ),
-
             )
+
+        finally:
+            conn.close()
+
+
+    # ==================================================
+    # TOP PRODUCTS REPORT
+    # ==================================================
+
+    def get_top_products(
+        self,
+        limit: int = 5
+    ) -> list[TopProductReport]:
+
+        conn = get_connection()
+
+        try:
+
+            repository = ReportRepository(conn)
+
+            data = repository.get_top_products(
+                limit
+            )
+
+
+            return [
+
+                TopProductReport(
+
+                    product_name=item["product_name"],
+
+                    total_sold=item["total_sold"],
+
+                    revenue=self.normalize_decimal(
+                        item["revenue"]
+                    ),
+
+                )
+
+                for item in data
+
+            ]
 
         finally:
             conn.close()

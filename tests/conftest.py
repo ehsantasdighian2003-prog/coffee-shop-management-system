@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from app.core.database import get_connection
 from app.main import app
 from tests.fixtures.orders import *
+from tests.fixtures.reports import *
 
 # =====================================================
 # CLEAN TEST DATABASE BEFORE EACH TEST
