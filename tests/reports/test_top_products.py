@@ -1,7 +1,11 @@
-def test_top_products_empty(client):
+def test_top_products_empty(
+    client,
+    auth_headers,
+):
 
     response = client.get(
-        "/reports/top-products"
+        "/reports/top-products",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -9,6 +13,7 @@ def test_top_products_empty(client):
     data = response.json()
 
     assert data == []
+
 
 
 def test_top_products_with_orders(
@@ -29,7 +34,8 @@ def test_top_products_with_orders(
 
 
     response = client.get(
-        "/reports/top-products"
+        "/reports/top-products",
+        headers=auth_headers,
     )
 
 

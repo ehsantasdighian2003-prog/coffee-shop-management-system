@@ -12,6 +12,7 @@ from app.schemas.order import (
     PaginatedOrdersResponse,
 )
 from app.services.order_service import OrderService
+from app.schemas.order import OrderStatusUpdate
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -107,3 +108,39 @@ def get_my_orders(current_user: dict = Depends(get_current_user)):
 def get_order_by_id(order_id: int, current_user: dict = Depends(get_current_user)):
 
     return order_service.get_order_by_id(order_id, current_user)
+
+
+# =====================================================
+# UPDATE ORDER STATUS
+# =====================================================
+
+
+@router.patch("/{order_id}/status")
+def update_order_status(
+    order_id: int,
+    request: OrderStatusUpdate,
+    current_user: dict = Depends(get_current_user),
+):
+
+    return order_service.update_order_status(
+        order_id=order_id,
+        status=request.status,
+        user=current_user,
+    )
+
+
+# =====================================================
+# GET ORDER STATUS HISTORY
+# =====================================================
+
+
+@router.get("/{order_id}/history")
+def get_order_status_history(
+    order_id: int,
+    current_user: dict = Depends(get_current_user),
+):
+
+    return order_service.get_order_status_history(
+        order_id=order_id,
+        user=current_user,
+    )

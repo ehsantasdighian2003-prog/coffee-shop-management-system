@@ -1,10 +1,14 @@
 from decimal import Decimal
 
 
-def test_sales_report_empty(client):
+def test_sales_report_empty(
+    client,
+    auth_headers,
+):
 
     response = client.get(
-        "/reports/sales"
+        "/reports/sales",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -19,7 +23,8 @@ def test_sales_report_empty(client):
 
 def test_sales_report_with_orders(
     client,
-    create_order
+    auth_headers,
+    create_order,
 ):
 
     create_order(100000)
@@ -28,7 +33,8 @@ def test_sales_report_with_orders(
 
 
     response = client.get(
-        "/reports/sales"
+        "/reports/sales",
+        headers=auth_headers,
     )
 
 

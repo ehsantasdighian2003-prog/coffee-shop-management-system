@@ -13,6 +13,8 @@ from app.schemas.report import (
     TopProductReport,
     WeeklySalesReport,
     RevenueTrendReport,
+    YearlySalesReport,
+    YearlyMonthlySales,
 )
 
 
@@ -392,4 +394,76 @@ class ReportService:
             ]
 
         finally:
+            conn.close()
+            
+            
+    # ==================================================
+    # YEARLY SALES REPORT
+    # ==================================================
+
+    def get_yearly_sales_report(
+        self,
+        year: int
+    ) -> YearlySalesReport:
+
+        conn = get_connection()
+
+        try:
+
+            repository = ReportRepository(conn)
+
+            data = repository.get_yearly_sales_report(
+                year
+            )
+
+
+            total_orders = sum(
+                item["total_orders"]
+                for item in data
+            )
+
+
+            total_revenue = sum(
+                (
+                    item["revenue"]
+                    for item in data
+                ),
+                Decimal("0")
+            )
+
+
+            return YearlySalesReport(
+
+                year=year,
+
+                total_orders=total_orders,
+
+                total_revenue=self.normalize_decimal(
+                    total_revenue
+                ),
+
+                monthly_sales=[
+
+                    YearlyMonthlySales(
+
+                        month=int(
+                            item["month"]
+                        ),
+
+                        total_orders=item["total_orders"],
+
+                        revenue=self.normalize_decimal(
+                            item["revenue"]
+                        ),
+
+                    )
+
+                    for item in data
+
+                ],
+            )
+
+
+        finally:
+
             conn.close()

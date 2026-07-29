@@ -1,24 +1,25 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Query
 
+from app.core.security import admin_required
 from app.schemas.report import (
     CategoryPerformanceReport,
     CustomerReport,
+    DailySalesReport,
     DashboardReport,
     LowStockReport,
     MonthlySalesReport,
+    RevenueTrendReport,
     SalesReport,
     TopProductReport,
-    DailySalesReport,
     WeeklySalesReport,
-    RevenueTrendReport,
+    YearlySalesReport,
 )
-
 from app.services.report_service import ReportService
 
 
 router = APIRouter(
     prefix="/reports",
-    tags=["Reports"]
+    tags=["Reports"],
 )
 
 
@@ -31,10 +32,11 @@ report_service = ReportService()
 
 @router.get(
     "/sales",
-    response_model=SalesReport
+    response_model=SalesReport,
 )
-def get_sales_report():
-
+def get_sales_report(
+    current_user: dict = Depends(admin_required),
+):
     return report_service.get_sales_report()
 
 
@@ -44,10 +46,11 @@ def get_sales_report():
 
 @router.get(
     "/dashboard",
-    response_model=DashboardReport
+    response_model=DashboardReport,
 )
-def get_dashboard_report():
-
+def get_dashboard_report(
+    current_user: dict = Depends(admin_required),
+):
     return report_service.get_dashboard_report()
 
 
@@ -57,76 +60,108 @@ def get_dashboard_report():
 
 @router.get(
     "/top-products",
-    response_model=list[TopProductReport]
+    response_model=list[TopProductReport],
 )
 def get_top_products(
-    limit: int = 5
+    limit: int = Query(
+        default=5,
+        ge=1,
+        le=100,
+        description="Number of top products to return",
+    ),
+    current_user: dict = Depends(admin_required),
 ):
+    return report_service.get_top_products(limit)
 
-    return report_service.get_top_products(
-        limit
-    )
-    
-    
+
 # ==================================================
 # MONTHLY SALES REPORT
 # ==================================================
 
 @router.get(
     "/monthly-sales",
-    response_model=list[MonthlySalesReport]
+    response_model=list[MonthlySalesReport],
 )
-def get_monthly_sales_report():
-
+def get_monthly_sales_report(
+    current_user: dict = Depends(admin_required),
+):
     return report_service.get_monthly_sales_report()
 
 
+# ==================================================
+# CUSTOMER REPORT
+# ==================================================
+
 @router.get(
     "/customers",
-    response_model=list[CustomerReport]
+    response_model=list[CustomerReport],
 )
-def get_customer_report():
-
+def get_customer_report(
+    current_user: dict = Depends(admin_required),
+):
     return report_service.get_customer_report()
 
+
+# ==================================================
+# LOW STOCK REPORT
+# ==================================================
 
 @router.get(
     "/low-stock",
     response_model=list[LowStockReport],
 )
 def get_low_stock_report(
-    threshold: int = 10,
+    threshold: int = Query(
+        default=10,
+        ge=0,
+        description="Minimum stock threshold",
+    ),
+    current_user: dict = Depends(admin_required),
 ):
-
     return report_service.get_low_stock_products(
-        threshold=threshold
+        threshold=threshold,
     )
-    
-    
+
+
+# ==================================================
+# CATEGORY PERFORMANCE REPORT
+# ==================================================
+
 @router.get(
     "/category-performance",
     response_model=list[CategoryPerformanceReport],
 )
-def get_category_performance_report():
-
+def get_category_performance_report(
+    current_user: dict = Depends(admin_required),
+):
     return report_service.get_category_performance()
 
+
+# ==================================================
+# DAILY SALES REPORT
+# ==================================================
 
 @router.get(
     "/daily-sales",
     response_model=list[DailySalesReport],
 )
-def get_daily_sales_report():
-
+def get_daily_sales_report(
+    current_user: dict = Depends(admin_required),
+):
     return report_service.get_daily_sales_report()
 
 
+# ==================================================
+# WEEKLY SALES REPORT
+# ==================================================
+
 @router.get(
     "/weekly-sales",
-    response_model=list[WeeklySalesReport]
+    response_model=list[WeeklySalesReport],
 )
-def get_weekly_sales_report():
-
+def get_weekly_sales_report(
+    current_user: dict = Depends(admin_required),
+):
     return report_service.get_weekly_sales_report()
 
 
@@ -138,6 +173,29 @@ def get_weekly_sales_report():
     "/revenue-trend",
     response_model=list[RevenueTrendReport],
 )
-def get_revenue_trend():
-
+def get_revenue_trend(
+    current_user: dict = Depends(admin_required),
+):
     return report_service.get_revenue_trend()
+
+
+# ==================================================
+# YEARLY SALES REPORT
+# ==================================================
+
+@router.get(
+    "/yearly-sales",
+    response_model=YearlySalesReport,
+)
+def get_yearly_sales_report(
+    year: int = Query(
+        ...,
+        ge=2000,
+        le=2100,
+        description="Year for sales report",
+    ),
+    current_user: dict = Depends(admin_required),
+):
+    return report_service.get_yearly_sales_report(
+        year
+    )

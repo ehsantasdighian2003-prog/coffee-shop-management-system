@@ -1,9 +1,16 @@
-def test_category_performance_empty(client):
+def test_category_performance_empty(
+    client,
+    auth_headers,
+):
 
-    response = client.get("/reports/category-performance")
+    response = client.get(
+        "/reports/category-performance",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
     assert response.json() == []
+
 
 
 def test_category_performance_with_orders(
@@ -25,6 +32,7 @@ def test_category_performance_with_orders(
         },
     ).json()
 
+
     # Register user
     client.post(
         "/auth/register",
@@ -34,6 +42,7 @@ def test_category_performance_with_orders(
             "password": "12345678",
         },
     )
+
 
     login = client.post(
         "/auth/login",
@@ -45,9 +54,11 @@ def test_category_performance_with_orders(
 
     token = login.json()["access_token"]
 
+
     headers = {
         "Authorization": f"Bearer {token}"
     }
+
 
     # Create order
     client.post(
@@ -63,11 +74,18 @@ def test_category_performance_with_orders(
         },
     )
 
-    response = client.get("/reports/category-performance")
+
+    response = client.get(
+        "/reports/category-performance",
+        headers=auth_headers,
+    )
+
 
     assert response.status_code == 200
 
+
     data = response.json()
+
 
     assert len(data) == 1
 

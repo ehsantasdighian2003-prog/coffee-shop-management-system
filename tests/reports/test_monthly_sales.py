@@ -1,10 +1,11 @@
-from datetime import datetime
-
-
-def test_monthly_sales_empty(client):
+def test_monthly_sales_empty(
+    client,
+    auth_headers,
+):
 
     response = client.get(
-        "/reports/monthly-sales"
+        "/reports/monthly-sales",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -15,6 +16,7 @@ def test_monthly_sales_empty(client):
 
 def test_monthly_sales_with_orders(
     client,
+    auth_headers,
     create_report_order,
     test_product,
 ):
@@ -27,7 +29,8 @@ def test_monthly_sales_with_orders(
 
 
     response = client.get(
-        "/reports/monthly-sales"
+        "/reports/monthly-sales",
+        headers=auth_headers,
     )
 
 

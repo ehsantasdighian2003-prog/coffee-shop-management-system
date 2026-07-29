@@ -1,11 +1,16 @@
-def test_daily_sales_empty(client):
+def test_daily_sales_empty(
+    client,
+    auth_headers,
+):
 
     response = client.get(
-        "/reports/daily-sales"
+        "/reports/daily-sales",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
     assert response.json() == []
+
 
 
 def test_daily_sales_with_orders(
@@ -80,7 +85,8 @@ def test_daily_sales_with_orders(
 
     # Get daily sales report
     report_response = client.get(
-        "/reports/daily-sales"
+        "/reports/daily-sales",
+        headers=auth_headers,
     )
 
     assert report_response.status_code == 200

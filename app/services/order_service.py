@@ -309,3 +309,73 @@ class OrderService:
             orders = uow.orders.get_orders_by_user(user_id)
 
             return [self._serialize_order(order) for order in orders]
+        
+        
+    # =====================================================
+    # UPDATE ORDER STATUS
+    # =====================================================
+
+    def update_order_status(
+        self,
+        order_id: int,
+        status: str,
+        user: dict,
+    ):
+
+        if user["role"] != "admin":
+
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin only access.",
+            )
+
+        with UnitOfWork() as uow:
+
+            order = uow.orders.get_order_by_id(order_id)
+
+            if not order:
+
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Order not found.",
+                )
+
+            updated = uow.orders.update_order_status(
+                order_id,
+                status,
+            )
+
+            uow.orders.add_status_history(
+                order_id=order_id,
+                status=status,
+                changed_by=user["id"],
+            )
+
+            return updated
+        
+        
+    # =====================================================
+    # GET ORDER STATUS HISTORY
+    # =====================================================
+
+    def get_order_status_history(
+        self,
+        order_id: int,
+        user: dict,
+    ):
+
+        with UnitOfWork() as uow:
+
+            order = uow.orders.get_order_by_id(order_id)
+
+            if not order:
+
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Order not found.",
+                )
+
+            self._check_order_permission(order, user)
+
+            return uow.orders.get_order_status_history(order_id)
+        

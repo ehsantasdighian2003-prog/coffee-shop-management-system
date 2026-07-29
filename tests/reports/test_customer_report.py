@@ -1,7 +1,11 @@
-def test_customer_report_empty(client):
+def test_customer_report_empty(
+    client,
+    auth_headers,
+):
 
     response = client.get(
-        "/reports/customers"
+        "/reports/customers",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -9,8 +13,9 @@ def test_customer_report_empty(client):
     data = response.json()
 
     assert data == []
-    
-    
+
+
+
 def test_customer_report_with_orders(
     client,
     auth_headers,
@@ -28,6 +33,7 @@ def test_customer_report_with_orders(
 
     assert login.status_code == 200
 
+
     # ایجاد سفارش
     response = client.post(
         "/orders/",
@@ -44,12 +50,18 @@ def test_customer_report_with_orders(
 
     assert response.status_code == 201
 
+
     # دریافت گزارش
-    response = client.get("/reports/customers")
+    response = client.get(
+        "/reports/customers",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
 
+
     data = response.json()
+
 
     assert len(data) == 1
 

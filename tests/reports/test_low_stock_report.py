@@ -1,9 +1,16 @@
-def test_low_stock_report_empty(client):
+def test_low_stock_report_empty(
+    client,
+    auth_headers,
+):
 
-    response = client.get("/reports/low-stock")
+    response = client.get(
+        "/reports/low-stock",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
     assert response.json() == []
+
 
 
 def test_low_stock_report_with_products(
@@ -11,6 +18,7 @@ def test_low_stock_report_with_products(
     auth_headers,
     test_category,
 ):
+
     client.post(
         "/products/",
         headers=auth_headers,
@@ -37,7 +45,11 @@ def test_low_stock_report_with_products(
         },
     )
 
-    response = client.get("/reports/low-stock")
+
+    response = client.get(
+        "/reports/low-stock",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
 

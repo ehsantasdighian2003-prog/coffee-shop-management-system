@@ -1,12 +1,17 @@
-def test_revenue_trend_empty(client):
+def test_revenue_trend_empty(
+    client,
+    auth_headers,
+):
 
     response = client.get(
-        "/reports/revenue-trend"
+        "/reports/revenue-trend",
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
 
     assert response.json() == []
+
 
 
 def test_revenue_trend_with_orders(
@@ -78,7 +83,8 @@ def test_revenue_trend_with_orders(
 
 
     report_response = client.get(
-        "/reports/revenue-trend"
+        "/reports/revenue-trend",
+        headers=auth_headers,
     )
 
 

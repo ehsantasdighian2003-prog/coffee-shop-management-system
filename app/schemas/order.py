@@ -61,6 +61,8 @@ class OrderSummary(BaseModel):
 
     total_price: Decimal
 
+    status: str
+
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -110,3 +112,8 @@ class PaginatedOrdersResponse(BaseModel):
     data: list[OrderSummary]
 
     model_config = ConfigDict(from_attributes=True)
+    
+    
+class OrderStatusUpdate(BaseModel):
+
+    status: str

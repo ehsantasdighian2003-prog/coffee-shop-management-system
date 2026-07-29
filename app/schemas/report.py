@@ -161,3 +161,38 @@ class RevenueTrendReport(BaseModel):
     date: date
     total_orders: int
     revenue: Decimal
+    
+    
+# ==================================================
+# YEARLY SALES REPORT
+# ==================================================
+
+
+class YearlyMonthlySales(BaseModel):
+    """
+    Monthly breakdown inside yearly sales report.
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    month: int
+    total_orders: int
+    revenue: Decimal
+
+
+
+class YearlySalesReport(BaseModel):
+    """
+    Yearly sales analytics report schema.
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    year: int
+    total_orders: int
+    total_revenue: Decimal
+    monthly_sales: list[YearlyMonthlySales]
