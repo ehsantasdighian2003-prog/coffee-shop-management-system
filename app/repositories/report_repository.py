@@ -276,3 +276,243 @@ class ReportRepository:
             )
 
             return cur.fetchall()
+        
+        
+    # ==================================================
+    # LOW STOCK REPORT
+    # ==================================================
+
+    def get_low_stock_products(
+        self,
+        threshold: int = 10,
+    ):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    id,
+
+                    name,
+
+                    stock
+
+                FROM products
+
+                WHERE
+
+                    stock <= %s
+
+                    AND is_active = TRUE
+
+                ORDER BY
+
+                    stock ASC,
+                    name ASC
+                """,
+                (threshold,),
+            )
+
+            return cur.fetchall()
+        
+        
+    # ==================================================
+    # CATEGORY PERFORMANCE REPORT
+    # ==================================================
+
+    def get_category_performance(self):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    c.name AS category_name,
+
+                    COALESCE(
+                        SUM(oi.quantity),
+                        0
+                    ) AS total_sold,
+
+                    COALESCE(
+                        SUM(
+                            oi.quantity * oi.price
+                        ),
+                        0
+                    ) AS revenue
+
+                FROM categories c
+
+                LEFT JOIN products p
+                    ON p.category_id = c.id
+
+                LEFT JOIN order_items oi
+                    ON oi.product_id = p.id
+
+                GROUP BY
+                    c.id,
+                    c.name
+
+                HAVING
+                    COALESCE(SUM(oi.quantity), 0) > 0
+
+                ORDER BY
+                    revenue DESC,
+                    category_name ASC
+                """
+            )
+
+            return cur.fetchall()
+        
+        
+    # ==================================================
+    # DAILY SALES REPORT
+    # ==================================================
+
+    def get_daily_sales_report(self):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    DATE(created_at) AS date,
+
+                    COUNT(id) AS total_orders,
+
+                    COALESCE(
+                        SUM(total_price),
+                        0
+                    ) AS revenue,
+
+                    COALESCE(
+                        AVG(total_price),
+                        0
+                    ) AS average_order_value
+
+
+                FROM orders
+
+
+                GROUP BY
+                    DATE(created_at)
+
+
+                ORDER BY
+                    date DESC
+                """
+            )
+
+            return cur.fetchall()
+        
+        
+    # ==================================================
+    # WEEKLY SALES REPORT
+    # ==================================================
+
+    def get_weekly_sales_report(self) -> list[dict[str, Any]]:
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    TO_CHAR(
+                        DATE_TRUNC(
+                            'week',
+                            created_at
+                        ),
+                        'IYYY-"W"IW'
+                    ) AS week,
+
+
+                    COUNT(id) AS total_orders,
+
+
+                    COALESCE(
+                        SUM(total_price),
+                        0
+                    ) AS revenue,
+
+
+                    COALESCE(
+                        AVG(total_price),
+                        0
+                    ) AS average_order_value
+
+
+                FROM orders
+
+
+                GROUP BY
+                    DATE_TRUNC(
+                        'week',
+                        created_at
+                    )
+
+
+                ORDER BY
+                    DATE_TRUNC(
+                        'week',
+                        created_at
+                    ) DESC
+
+                """
+            )
+
+            return cur.fetchall()
+        
+        
+    # ==================================================
+    # REVENUE TREND REPORT
+    # ==================================================
+
+    def get_revenue_trend(self) -> list[dict[str, Any]]:
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    DATE(created_at) AS date,
+
+
+                    COUNT(id) AS total_orders,
+
+
+                    COALESCE(
+                        SUM(total_price),
+                        0
+                    ) AS revenue
+
+
+                FROM orders
+
+
+                GROUP BY
+                    DATE(created_at)
+
+
+                ORDER BY
+                    date ASC
+
+                """
+            )
+
+            return cur.fetchall()
