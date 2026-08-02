@@ -103,3 +103,30 @@ def test_revenue_trend_with_orders(
     assert float(
         data[0]["revenue"]
     ) == 10.0
+    
+    
+def test_revenue_trend_without_token(
+    client,
+):
+
+    response = client.get(
+        "/reports/revenue-trend",
+    )
+
+    assert response.status_code == 401
+
+
+
+def test_revenue_trend_forbidden_for_user(
+    client,
+    user_token,
+):
+
+    response = client.get(
+        "/reports/revenue-trend",
+        headers={
+            "Authorization": f"Bearer {user_token}"
+        },
+    )
+
+    assert response.status_code == 403

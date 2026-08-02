@@ -6,6 +6,7 @@ from app.repositories.order_repository import OrderRepository
 from app.repositories.product_repository import ProductRepository
 from app.repositories.report_repository import ReportRepository
 from app.repositories.user_repository import UserRepository
+from app.repositories.inventory_repository import InventoryRepository
 
 
 class UnitOfWork:
@@ -25,6 +26,7 @@ class UnitOfWork:
         self.users: UserRepository | None = None
         self.auth: AuthRepository | None = None
         self.reports: ReportRepository | None = None
+        self.inventory: InventoryRepository | None = None
 
 
     def __enter__(self) -> "UnitOfWork":
@@ -42,6 +44,8 @@ class UnitOfWork:
         self.auth = AuthRepository(self.conn)
 
         self.reports = ReportRepository(self.conn)
+        
+        self.inventory = InventoryRepository(self.conn)
 
         return self
 

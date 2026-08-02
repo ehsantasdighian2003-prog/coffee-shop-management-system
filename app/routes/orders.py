@@ -28,9 +28,13 @@ order_service = OrderService()
 @router.post("/", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_order(request: OrderCreate, current_user: dict = Depends(get_current_user)):
 
-    result = order_service.create_order(user_id=current_user["id"], items=request.items)
+    result = order_service.create_order(
+        user_id=current_user["id"],
+        payment_method=request.payment_method,
+        items=request.items,
+    )
 
-    return OrderResponse(**result)
+    return result
 
 
 # =====================================================

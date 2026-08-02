@@ -1,13 +1,10 @@
-from decimal import Decimal
-
-
-def test_sales_report_empty(
+def test_profit_report_empty(
     client,
     auth_headers,
 ):
 
     response = client.get(
-        "/reports/sales",
+        "/reports/profit",
         headers=auth_headers,
     )
 
@@ -15,25 +12,31 @@ def test_sales_report_empty(
 
     data = response.json()
 
-    assert data["total_orders"] == 0
+    print("\nPROFIT RESPONSE:", data)
+
     assert data["total_revenue"] == "0"
-    assert data["average_order_value"] == "0"
+    assert data["total_cost"] == "0"
+    assert data["total_profit"] == "0"
 
 
 
-def test_sales_report_with_orders(
+def test_profit_report_with_orders(
     client,
     auth_headers,
     create_order,
 ):
 
-    create_order(100000)
+    create_order(
+        100000
+    )
 
-    create_order(200000)
+    create_order(
+        200000
+    )
 
 
     response = client.get(
-        "/reports/sales",
+        "/reports/profit",
         headers=auth_headers,
     )
 
@@ -44,24 +47,25 @@ def test_sales_report_with_orders(
     data = response.json()
 
 
-    assert data["total_orders"] == 2
-
     assert data["total_revenue"] == "300000"
 
-    assert data["average_order_value"] == "150000"
-    
-    
+    assert data["total_cost"] == "0"
+
+    assert data["total_profit"] == "300000"
+
+
+
 # =====================================================
-# SALES REPORT WITHOUT AUTHORIZATION
+# PROFIT REPORT WITHOUT AUTHORIZATION
 # =====================================================
 
 
-def test_sales_report_without_token(
+def test_profit_report_without_token(
     client,
 ):
 
     response = client.get(
-        "/reports/sales",
+        "/reports/profit",
     )
 
     assert response.status_code == 401
@@ -69,17 +73,17 @@ def test_sales_report_without_token(
 
 
 # =====================================================
-# SALES REPORT FORBIDDEN FOR NORMAL USER
+# PROFIT REPORT FORBIDDEN FOR NORMAL USER
 # =====================================================
 
 
-def test_sales_report_forbidden_for_user(
+def test_profit_report_forbidden_for_user(
     client,
     user_token,
 ):
 
     response = client.get(
-        "/reports/sales",
+        "/reports/profit",
         headers={
             "Authorization": f"Bearer {user_token}"
         },

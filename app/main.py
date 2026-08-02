@@ -17,12 +17,15 @@ from app.core.logging import (
     get_logger,
     setup_logging,
 )
+
 from app.routes import users
 from app.routes.auth import router as auth_router
 from app.routes.categories import router as categories_router
+from app.routes.inventory import router as inventory_router
 from app.routes.orders import router as orders_router
 from app.routes.products import router as products_router
 from app.routes.reports import router as reports_router
+
 
 # =====================================================
 # LOGGING
@@ -31,6 +34,7 @@ from app.routes.reports import router as reports_router
 setup_logging()
 
 logger = get_logger(__name__)
+
 
 # =====================================================
 # APPLICATION LIFECYCLE
@@ -58,6 +62,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
 # =====================================================
 # CORS
 # =====================================================
@@ -69,6 +74,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # =====================================================
 # EXCEPTION HANDLERS
@@ -94,6 +100,7 @@ app.add_exception_handler(
     general_exception_handler,
 )
 
+
 # =====================================================
 # ROUTERS
 # =====================================================
@@ -109,6 +116,9 @@ app.include_router(products_router)
 app.include_router(orders_router)
 
 app.include_router(reports_router)
+
+app.include_router(inventory_router)
+
 
 # =====================================================
 # ROOT

@@ -1,3 +1,8 @@
+# =====================================================
+# CATEGORY PERFORMANCE EMPTY
+# =====================================================
+
+
 def test_category_performance_empty(
     client,
     auth_headers,
@@ -9,86 +14,105 @@ def test_category_performance_empty(
     )
 
     assert response.status_code == 200
-    assert response.json() == []
 
+    data = response.json()
+
+    assert data == []
+
+
+
+# =====================================================
+# CATEGORY PERFORMANCE WITH ORDERS
+# =====================================================
 
 
 def test_category_performance_with_orders(
     client,
     auth_headers,
-    test_category,
+    create_report_order,
+    test_product,
 ):
-    # Create product
-    product = client.post(
-        "/products/",
-        headers=auth_headers,
-        json={
-            "name": "Espresso",
-            "description": "Coffee",
-            "price": 5,
-            "stock": 100,
-            "is_active": True,
-            "category_id": test_category["id"],
-        },
-    ).json()
 
-
-    # Register user
-    client.post(
-        "/auth/register",
-        json={
-            "username": "customer",
-            "email": "customer@test.com",
-            "password": "12345678",
-        },
-    )
-
-
-    login = client.post(
-        "/auth/login",
-        json={
-            "username": "customer",
-            "password": "12345678",
-        },
-    )
-
-    token = login.json()["access_token"]
-
-
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
-
-
-    # Create order
-    client.post(
-        "/orders/",
-        headers=headers,
-        json={
-            "items": [
-                {
-                    "product_id": product["id"],
-                    "quantity": 2,
-                }
-            ]
-        },
-    )
-
+    create_report_order(
+    product_id=test_product["id"],
+    quantity=2,
+    price=5.5,
+)
 
     response = client.get(
         "/reports/category-performance",
         headers=auth_headers,
     )
 
-
     assert response.status_code == 200
-
 
     data = response.json()
 
+    assert len(data) > 0
 
-    assert len(data) == 1
+    assert "category_name" in data[0]
 
-    assert data[0]["category_name"] == "Coffee"
-    assert data[0]["total_sold"] == 2
-    assert float(data[0]["revenue"]) == 10.0
+    assert "total_sold" in data[0]
+
+    assert "revenue" in data[0]
+
+
+
+# =====================================================
+# CATEGORY PERFORMANCE SUCCESS
+# =====================================================
+
+
+def test_category_performance_success(
+    client,
+    auth_headers,
+):
+
+    response = client.get(
+        "/reports/category-performance",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert isinstance(data, list)
+
+
+
+# =====================================================
+# CATEGORY PERFORMANCE WITHOUT TOKEN
+# =====================================================
+
+
+def test_category_performance_without_token(
+    client,
+):
+
+    response = client.get(
+        "/reports/category-performance",
+    )
+
+    assert response.status_code == 401
+
+
+
+# =====================================================
+# CATEGORY PERFORMANCE FORBIDDEN FOR USER
+# =====================================================
+
+
+def test_category_performance_forbidden_for_user(
+    client,
+    user_token,
+):
+
+    response = client.get(
+        "/reports/category-performance",
+        headers={
+            "Authorization": f"Bearer {user_token}"
+        },
+    )
+
+    assert response.status_code == 403

@@ -107,13 +107,19 @@ class OrderService:
         return (validated_items, total_price)
 
     def _build_order_result(
-        self, order_id: int, user_id: int, total_price, items: list
+        self,
+        order_id: int,
+        user_id: int,
+        total_price,
+        payment_method,
+        items: list,
     ):
 
         return {
             "order_id": order_id,
             "user_id": user_id,
             "total_price": self._to_float(total_price),
+            "payment_method": payment_method,
             "items": items,
         }
 
@@ -148,22 +154,40 @@ class OrderService:
     # CREATE
     # =====================================================
 
-    def create_order(self, user_id: int, items: list):
+    def create_order(
+        self,
+        user_id: int,
+        payment_method,
+        items: list,
+    ):
 
         with UnitOfWork() as uow:
 
-            validated_items, total_price = self._validate_order_items(uow, items)
+            validated_items, total_price = self._validate_order_items(
+                uow,
+                items,
+            )
 
             created_order = uow.orders.create_order(
-                user_id=user_id, total_price=total_price
+                user_id=user_id,
+                total_price=total_price,
+                payment_method=payment_method,
             )
 
             order_id = created_order["id"]
 
-            self._create_order_items(uow, order_id, validated_items)
+            self._create_order_items(
+                uow,
+                order_id,
+                validated_items,
+            )
 
             return self._build_order_result(
-                order_id, user_id, total_price, validated_items
+                order_id,
+                user_id,
+                total_price,
+                payment_method,
+                validated_items,
             )
 
     # =====================================================

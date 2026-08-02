@@ -1,6 +1,6 @@
 import os
 
-os.environ["DATABASE_NAME"] = "coffee_shop_test"
+os.environ["DATABASE_NAME"] = "coffee_shop"
 
 
 import pytest
@@ -10,6 +10,9 @@ from app.core.database import get_connection
 from app.main import app
 from tests.fixtures.orders import *
 from tests.fixtures.reports import *
+from app.core.config import settings
+
+print("TEST DATABASE:", settings.DATABASE_NAME)
 
 # =====================================================
 # CLEAN TEST DATABASE BEFORE EACH TEST

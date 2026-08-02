@@ -37,9 +37,16 @@ class OrderRepository:
     # CREATE ORDER
     # =====================================================
 
-    def create_order(self, user_id: int, total_price):
+    def create_order(
+        self,
+        user_id: int,
+        total_price,
+        payment_method,
+    ):
 
-        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
 
             cur.execute(
                 """
@@ -47,21 +54,34 @@ class OrderRepository:
                 (
                     user_id,
                     total_price,
+                    payment_method,
                     status
                 )
 
-                VALUES (%s, %s, %s)
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
 
                 RETURNING id
                 """,
                 (
                     user_id,
                     total_price,
+                    payment_method,
                     "PENDING",
                 ),
             )
 
             return cur.fetchone()
+
+
+    # =====================================================
+    # ORDER ITEMS
+    # =====================================================
 
     def create_order_item(
         self,
@@ -83,7 +103,13 @@ class OrderRepository:
                     price
                 )
 
-                VALUES (%s, %s, %s, %s)
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
                 """,
                 (
                     order_id,

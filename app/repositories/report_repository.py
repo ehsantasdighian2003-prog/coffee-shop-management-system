@@ -571,3 +571,183 @@ class ReportRepository:
             )
 
             return cur.fetchall()
+        
+        
+    # ==================================================
+    # BEST SELLING HOURS REPORT
+    # ==================================================
+
+    def get_best_selling_hours(self):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    EXTRACT(
+                        HOUR FROM created_at
+                    )::INT AS hour,
+
+
+                    COUNT(id) AS total_orders,
+
+
+                    COALESCE(
+                        SUM(total_price),
+                        0
+                    ) AS revenue
+
+
+                FROM orders
+
+
+                GROUP BY
+                    EXTRACT(
+                        HOUR FROM created_at
+                    )
+
+
+                ORDER BY
+                    revenue DESC,
+                    hour ASC
+                """
+            )
+
+            return cur.fetchall()
+        
+        
+    # ==================================================
+    # PROFIT REPORT
+    # ==================================================
+
+    def get_profit_report(self):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    p.name AS product_name,
+
+
+                    COALESCE(
+                        SUM(oi.quantity),
+                        0
+                    ) AS total_sold,
+
+
+                    COALESCE(
+                        SUM(
+                            oi.quantity * oi.price
+                        ),
+                        0
+                    ) AS revenue,
+
+
+                    COALESCE(
+                        SUM(
+                            oi.quantity * p.cost_price
+                        ),
+                        0
+                    ) AS cost,
+
+
+                    COALESCE(
+                        SUM(
+                            oi.quantity * oi.price
+                        ),
+                        0
+                    )
+                    -
+                    COALESCE(
+                        SUM(
+                            oi.quantity * p.cost_price
+                        ),
+                        0
+                    ) AS profit
+
+
+                FROM order_items oi
+
+
+                INNER JOIN products p
+
+                    ON p.id = oi.product_id
+
+
+                GROUP BY
+
+                    p.id,
+                    p.name
+
+
+                ORDER BY
+
+                    profit DESC,
+                    product_name ASC
+
+                """
+            )
+
+            return cur.fetchall()
+        
+        
+    def get_profit_summary(
+        self,
+    ) -> dict[str, Any]:
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    COALESCE(
+                        SUM(o.total_price),
+                        0
+                    ) AS total_revenue,
+
+
+                    COALESCE(
+                        SUM(
+                            oi.quantity * p.cost_price
+                        ),
+                        0
+                    ) AS total_cost,
+
+
+                    COALESCE(
+                        SUM(o.total_price),
+                        0
+                    )
+                    -
+                    COALESCE(
+                        SUM(
+                            oi.quantity * p.cost_price
+                        ),
+                        0
+                    ) AS total_profit
+
+
+                FROM orders o
+
+
+                LEFT JOIN order_items oi
+                    ON oi.order_id = o.id
+
+
+                LEFT JOIN products p
+                    ON p.id = oi.product_id
+
+                """
+            )
+
+            return cur.fetchone()

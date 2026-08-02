@@ -13,6 +13,8 @@ from app.schemas.report import (
     TopProductReport,
     WeeklySalesReport,
     YearlySalesReport,
+    BestSellingHour,
+    ProfitReport,
 )
 from app.services.report_service import ReportService
 
@@ -199,3 +201,31 @@ def get_yearly_sales_report(
     return report_service.get_yearly_sales_report(
         year
     )
+    
+    
+# ==================================================
+# BEST SELLING HOURS REPORT
+# ==================================================
+
+@router.get(
+    "/best-selling-hours",
+    response_model=list[BestSellingHour],
+)
+def get_best_selling_hours(
+    current_user: dict = Depends(admin_required),
+):
+    return report_service.get_best_selling_hours()
+
+
+# ==================================================
+# PROFIT REPORT
+# ==================================================
+
+@router.get(
+    "/profit",
+    response_model=ProfitReport,
+)
+def get_profit_report(
+    current_user: dict = Depends(admin_required),
+):
+    return report_service.get_profit_report()

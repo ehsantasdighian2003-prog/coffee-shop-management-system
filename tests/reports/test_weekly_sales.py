@@ -102,3 +102,30 @@ def test_weekly_sales_with_orders(
     assert float(
         data[0]["average_order_value"]
     ) == 10.0
+    
+    
+def test_weekly_sales_without_token(
+    client,
+):
+
+    response = client.get(
+        "/reports/weekly-sales",
+    )
+
+    assert response.status_code == 401
+
+
+
+def test_weekly_sales_forbidden_for_user(
+    client,
+    user_token,
+):
+
+    response = client.get(
+        "/reports/weekly-sales",
+        headers={
+            "Authorization": f"Bearer {user_token}"
+        },
+    )
+
+    assert response.status_code == 403

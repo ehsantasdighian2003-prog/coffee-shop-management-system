@@ -15,6 +15,9 @@ from app.schemas.report import (
     RevenueTrendReport,
     YearlySalesReport,
     YearlyMonthlySales,
+    BestSellingHour,
+    ProfitProductReport,
+    ProfitReport,
 )
 
 
@@ -467,3 +470,104 @@ class ReportService:
         finally:
 
             conn.close()
+            
+            
+    # ==================================================
+    # BEST SELLING HOURS REPORT
+    # ==================================================
+
+    def get_best_selling_hours(
+        self,
+    ) -> list[BestSellingHour]:
+
+        conn = get_connection()
+
+        try:
+
+            repository = ReportRepository(conn)
+
+            data = repository.get_best_selling_hours()
+
+            return [
+
+                BestSellingHour(
+                    hour=item["hour"],
+                    total_orders=item["total_orders"],
+                    revenue=self.normalize_decimal(
+                        item["revenue"]
+                    ),
+                )
+
+                for item in data
+
+            ]
+
+        finally:
+
+            conn.close()
+            
+            
+    # ==================================================
+    # PROFIT REPORT
+    # ==================================================
+
+    def get_profit_report(
+        self,
+    ) -> ProfitReport:
+
+        conn = get_connection()
+
+        try:
+
+            repository = ReportRepository(conn)
+
+            summary = repository.get_profit_summary()
+
+            products = repository.get_profit_report()
+
+            return ProfitReport(
+
+                total_revenue=self.normalize_decimal(
+                    summary["total_revenue"]
+                ),
+
+                total_cost=self.normalize_decimal(
+                    summary["total_cost"]
+                ),
+
+                total_profit=self.normalize_decimal(
+                    summary["total_profit"]
+                ),
+
+                products=[
+
+                    ProfitProductReport(
+
+                        product_name=item["product_name"],
+
+                        total_sold=item["total_sold"],
+
+                        revenue=self.normalize_decimal(
+                            item["revenue"]
+                        ),
+
+                        cost=self.normalize_decimal(
+                            item["cost"]
+                        ),
+
+                        profit=self.normalize_decimal(
+                            item["profit"]
+                        ),
+
+                        )
+
+                    for item in products
+
+                ],
+
+            )
+
+        finally:
+
+            conn.close()
+            

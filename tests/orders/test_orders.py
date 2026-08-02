@@ -8,7 +8,15 @@ def test_create_order_success(client, user_token, test_product):
     response = client.post(
         "/orders/",
         headers={"Authorization": f"Bearer {user_token}"},
-        json={"items": [{"product_id": test_product["id"], "quantity": 2}]},
+        json={
+            "payment_method": "cash",
+            "items": [
+                {
+                    "product_id": test_product["id"],
+                    "quantity": 2,
+                }
+            ],
+        },
     )
 
     assert response.status_code == 201
@@ -17,6 +25,8 @@ def test_create_order_success(client, user_token, test_product):
 
     assert "order_id" in data
     assert data["user_id"] is not None
+
+    assert data["payment_method"] == "cash"
 
     assert len(data["items"]) == 1
 
@@ -39,7 +49,15 @@ def test_order_decreases_product_stock(client, user_token, test_product):
     response = client.post(
         "/orders/",
         headers={"Authorization": f"Bearer {user_token}"},
-        json={"items": [{"product_id": test_product["id"], "quantity": 5}]},
+        json={
+            "payment_method": "cash",
+            "items": [
+                {
+                    "product_id": test_product["id"],
+                    "quantity": 5,
+                }
+            ],
+        },
     )
 
     assert response.status_code == 201
@@ -65,7 +83,15 @@ def test_create_order_with_invalid_product(client, user_token):
     response = client.post(
         "/orders/",
         headers={"Authorization": f"Bearer {user_token}"},
-        json={"items": [{"product_id": 999999, "quantity": 1}]},
+        json={
+            "payment_method": "cash",
+            "items": [
+                {
+                    "product_id": 999999,
+                    "quantity": 1,
+                }
+            ],
+        },
     )
 
     assert response.status_code == 404
@@ -88,12 +114,13 @@ def test_create_order_with_insufficient_stock(client, user_token, test_product):
         "/orders/",
         headers={"Authorization": f"Bearer {user_token}"},
         json={
+            "payment_method": "cash",
             "items": [
                 {
                     "product_id": test_product["id"],
                     "quantity": test_product["stock"] + 1,
                 }
-            ]
+            ],
         },
     )
 
@@ -103,4 +130,7 @@ def test_create_order_with_insufficient_stock(client, user_token, test_product):
 
     assert data["success"] is False
 
-    assert f"Not enough stock for product {test_product['id']}." in data["message"]
+    assert (
+        f"Not enough stock for product {test_product['id']}."
+        in data["message"]
+    )
