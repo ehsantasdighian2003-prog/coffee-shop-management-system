@@ -15,6 +15,8 @@ from app.schemas.report import (
     YearlySalesReport,
     BestSellingHour,
     ProfitReport,
+    PaymentSummaryReport,
+    EmployeeAnalyticsReport,
 )
 from app.services.report_service import ReportService
 
@@ -229,3 +231,34 @@ def get_profit_report(
     current_user: dict = Depends(admin_required),
 ):
     return report_service.get_profit_report()
+
+
+# ==================================================
+# PAYMENT ANALYTICS
+# ==================================================
+
+@router.get(
+    "/payment-summary",
+    response_model=PaymentSummaryReport,
+)
+def get_payment_summary(
+    current_user: dict = Depends(admin_required),
+):
+    return report_service.get_payment_summary()
+
+
+# ==================================================
+# EMPLOYEE ANALYTICS
+# ==================================================
+
+@router.get(
+    "/employees",
+    response_model=list[EmployeeAnalyticsReport],
+)
+def employee_analytics(
+    current_user = Depends(admin_required),
+):
+
+    service = ReportService()
+
+    return service.get_employee_analytics()

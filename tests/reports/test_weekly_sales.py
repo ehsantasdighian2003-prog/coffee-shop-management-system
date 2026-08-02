@@ -69,6 +69,7 @@ def test_weekly_sales_with_orders(
             "Authorization": f"Bearer {token}"
         },
         json={
+            "payment_method": "cash",
             "items": [
                 {
                     "product_id": product["id"],

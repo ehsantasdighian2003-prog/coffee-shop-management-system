@@ -39,6 +39,7 @@ def test_customer_report_with_orders(
         "/orders/",
         headers=auth_headers,
         json={
+            "payment_method": "cash",
             "items": [
                 {
                     "product_id": test_product["id"],

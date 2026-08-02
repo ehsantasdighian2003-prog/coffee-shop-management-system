@@ -79,6 +79,7 @@ def test_best_selling_hours_with_orders(
             "Authorization": f"Bearer {user_token}"
         },
         json={
+            "payment_method": "cash",
             "items": [
                 {
                     "product_id": test_product["id"],

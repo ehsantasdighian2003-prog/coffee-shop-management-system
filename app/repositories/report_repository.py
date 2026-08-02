@@ -751,3 +751,104 @@ class ReportRepository:
             )
 
             return cur.fetchone()
+        
+        
+    # ==================================================
+    # PAYMENT ANALYTICS
+    # ==================================================
+
+    def get_payment_summary(self):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+                    COALESCE(payment_method, 'unknown') AS method,
+                    COUNT(id) AS transactions,
+                    COALESCE(
+                        SUM(total_price),
+                        0
+                    ) AS revenue
+
+                FROM orders
+
+                GROUP BY
+                    payment_method
+
+                ORDER BY
+                    revenue DESC,
+                    payment_method ASC;
+                """
+            )
+
+            return cur.fetchall()
+        
+
+    # ==================================================
+    # EMPLOYEE ANALYTICS
+    # ==================================================
+
+    def get_employee_analytics(self):
+
+        with self.conn.cursor(
+            cursor_factory=RealDictCursor
+        ) as cur:
+
+            cur.execute(
+                """
+                SELECT
+
+                    u.id AS employee_id,
+
+                    u.username,
+
+
+                    COUNT(o.id) AS total_orders,
+
+
+                    COALESCE(
+                        SUM(o.total_price),
+                        0
+                    ) AS total_sales,
+
+
+                    COALESCE(
+                        AVG(o.total_price),
+                        0
+                    ) AS average_order_value
+
+
+                FROM users u
+
+
+                INNER JOIN orders o
+
+                    ON o.user_id = u.id
+
+
+                WHERE
+
+                    u.role = 'admin'
+
+                    AND u.deleted_at IS NULL
+
+
+                GROUP BY
+
+                    u.id,
+                    u.username
+
+
+                ORDER BY
+
+                    total_sales DESC,
+                    username ASC
+
+                """
+            )
+
+
+            return cur.fetchall()

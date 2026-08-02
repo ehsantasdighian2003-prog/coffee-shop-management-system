@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from pydantic import (
@@ -279,7 +279,6 @@ class BestSellingHoursReport(BaseModel):
 # PROFIT REPORT
 # ==================================================
 
-
 class ProfitProductReport(BaseModel):
     """
     Product profit analytics schema.
@@ -295,6 +294,17 @@ class ProfitProductReport(BaseModel):
     cost: Decimal
     profit: Decimal
 
+    @field_serializer(
+        "revenue",
+        "cost",
+        "profit",
+    )
+    def serialize_decimal(
+        self,
+        value: Decimal,
+    ):
+        return str(value)
+
 
 class ProfitReport(BaseModel):
     """
@@ -308,26 +318,118 @@ class ProfitReport(BaseModel):
     total_revenue: Decimal
     total_cost: Decimal
     total_profit: Decimal
-    
-    
+
+    products: list[ProfitProductReport]
+
     @field_serializer(
-        "revenue",
-        "cost",
-        "profit",
+        "total_revenue",
+        "total_cost",
+        "total_profit",
     )
     def serialize_decimal(
         self,
         value: Decimal,
     ):
         return str(value)
+    
+    
+# ==================================================
+# PAYMENT ANALYTICS
+# ==================================================
 
-    products: list[ProfitProductReport]
+
+class PaymentMethodStats(BaseModel):
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    method: str
+    transactions: int
+    revenue: Decimal
+    percentage: float
+
+    @field_serializer("revenue")
+    def serialize_revenue(
+        self,
+        value: Decimal,
+    ):
+        return str(value)
+
+
+class PaymentSummaryReport(BaseModel):
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    total_transactions: int
+    total_revenue: Decimal
+    methods: list[PaymentMethodStats]
+
+    @field_serializer("total_revenue")
+    def serialize_total_revenue(
+        self,
+        value: Decimal,
+    ):
+        return str(value)
+
+
+class PaymentTransaction(BaseModel):
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    order_id: int
+    user_id: int
+    payment_method: str
+    total_price: Decimal
+    created_at: datetime
+
+    @field_serializer("total_price")
+    def serialize_total_price(
+        self,
+        value: Decimal,
+    ):
+        return str(value)
+
+
+class PaginatedPaymentTransactions(BaseModel):
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    page: int
+    limit: int
+    total: int
+    pages: int
+    data: list[PaymentTransaction]
     
     
+# ==================================================
+# EMPLOYEE ANALYTICS
+# ==================================================
+
+class EmployeeAnalyticsReport(BaseModel):
+    """
+    Employee performance analytics schema.
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
+
+    employee_id: int
+    username: str
+    total_orders: int
+    total_sales: Decimal
+    average_order_value: Decimal
+
     @field_serializer(
-        "total_revenue",
-        "total_cost",
-        "total_profit",
+        "total_sales",
+        "average_order_value",
     )
     def serialize_decimal(
         self,

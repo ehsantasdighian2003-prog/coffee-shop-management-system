@@ -19,26 +19,29 @@ def create_report_order():
         # Create order
 
         cursor.execute(
-            """
-            INSERT INTO orders
-            (
-                user_id,
-                total_price
-            )
+    """
+    INSERT INTO orders
+    (
+        user_id,
+        total_price,
+        payment_method
+    )
 
-            VALUES
-            (
-                %s,
-                %s
-            )
+    VALUES
+    (
+        %s,
+        %s,
+        %s
+    )
 
-            RETURNING id;
-            """,
-            (
-                1,
-                quantity * price
-            ),
-        )
+    RETURNING id;
+    """,
+    (
+        1,
+        quantity * price,
+        "cash"
+    ),
+)
 
         order_id = cursor.fetchone()[0]
 

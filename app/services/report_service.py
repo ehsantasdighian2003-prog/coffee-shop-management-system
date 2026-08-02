@@ -18,6 +18,9 @@ from app.schemas.report import (
     BestSellingHour,
     ProfitProductReport,
     ProfitReport,
+    PaymentMethodStats,
+    PaymentSummaryReport,
+    EmployeeAnalyticsReport,
 )
 
 
@@ -571,3 +574,128 @@ class ReportService:
 
             conn.close()
             
+
+    # ==================================================
+    # PAYMENT ANALYTICS
+    # ==================================================
+
+    def get_payment_summary(
+        self,
+    ) -> PaymentSummaryReport:
+
+        conn = get_connection()
+
+        try:
+
+            repository = ReportRepository(conn)
+
+            data = repository.get_payment_summary()
+
+            total_transactions = sum(
+                item["transactions"]
+                for item in data
+            )
+
+            total_revenue = sum(
+                (
+                    item["revenue"]
+                    for item in data
+                ),
+                Decimal("0")
+            )
+
+            methods = []
+
+            for item in data:
+
+                percentage = (
+                    round(
+                        (
+                            item["revenue"] / total_revenue
+                        ) * 100,
+                        2,
+                    )
+                    if total_revenue > 0
+                    else 0
+                )
+
+                methods.append(
+
+                    PaymentMethodStats(
+
+                        method=item["method"],
+
+                        transactions=item["transactions"],
+
+                        revenue=self.normalize_decimal(
+                            item["revenue"]
+                        ),
+
+                        percentage=percentage,
+
+                    )
+
+                )
+
+            return PaymentSummaryReport(
+
+                total_transactions=total_transactions,
+
+                total_revenue=self.normalize_decimal(
+                    total_revenue
+                ),
+
+                methods=methods,
+
+            )
+
+        finally:
+
+            conn.close()
+        
+        
+    # ==================================================
+    # EMPLOYEE ANALYTICS
+    # ==================================================
+
+    def get_employee_analytics(
+        self,
+    ) -> list[EmployeeAnalyticsReport]:
+
+        conn = get_connection()
+
+        try:
+
+            repository = ReportRepository(conn)
+
+            data = repository.get_employee_analytics()
+
+
+            return [
+
+                EmployeeAnalyticsReport(
+
+                    employee_id=item["employee_id"],
+
+                    username=item["username"],
+
+                    total_orders=item["total_orders"],
+
+                    total_sales=self.normalize_decimal(
+                        item["total_sales"]
+                    ),
+
+                    average_order_value=self.normalize_decimal(
+                        item["average_order_value"]
+                    ),
+
+                )
+
+                for item in data
+
+            ]
+
+
+        finally:
+
+            conn.close()

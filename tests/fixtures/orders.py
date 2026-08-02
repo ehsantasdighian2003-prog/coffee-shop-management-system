@@ -18,27 +18,30 @@ def create_order():
         cursor.execute(
             """
             INSERT INTO orders
-            (
-                customer_name,
-                quantity,
-                total_price,
-                status
-            )
-            VALUES
-            (
-                %s,
-                %s,
-                %s,
-                %s
-            )
-            RETURNING id;
+(
+    customer_name,
+    quantity,
+    total_price,
+    status,
+    payment_method
+)
+VALUES
+(
+    %s,
+    %s,
+    %s,
+    %s,
+    %s
+)
+RETURNING id;
             """,
             (
-                "Test Customer",
-                quantity,
-                total_price,
-                "completed",
-            ),
+    "Test Customer",
+    quantity,
+    total_price,
+    "completed",
+    "cash",
+),
         )
 
         order_id = cursor.fetchone()[0]
