@@ -25,6 +25,7 @@ from app.routes.inventory import router as inventory_router
 from app.routes.orders import router as orders_router
 from app.routes.products import router as products_router
 from app.routes.reports import router as reports_router
+from app.routes.suppliers import router as suppliers_router
 
 
 # =====================================================
@@ -118,6 +119,8 @@ app.include_router(orders_router)
 app.include_router(reports_router)
 
 app.include_router(inventory_router)
+
+app.include_router(suppliers_router)
 
 
 # =====================================================

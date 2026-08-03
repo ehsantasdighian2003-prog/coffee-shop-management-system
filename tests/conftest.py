@@ -2,15 +2,15 @@ import os
 
 os.environ["DATABASE_NAME"] = "coffee_shop"
 
-
 import pytest
 from fastapi.testclient import TestClient
+from psycopg2 import sql
 
+from app.core.config import settings
 from app.core.database import get_connection
 from app.main import app
 from tests.fixtures.orders import *
 from tests.fixtures.reports import *
-from app.core.config import settings
 
 print("TEST DATABASE:", settings.DATABASE_NAME)
 
@@ -21,26 +21,48 @@ print("TEST DATABASE:", settings.DATABASE_NAME)
 
 @pytest.fixture(autouse=True)
 def clean_database():
-
     conn = get_connection()
-
     cursor = conn.cursor()
 
-    cursor.execute("""
-        TRUNCATE TABLE
-            order_items,
-            orders,
-            products,
-            categories,
-            users
-        RESTART IDENTITY
-        CASCADE;
+    try:
+        cursor.execute("""
+            SELECT tablename
+            FROM pg_tables
+            WHERE schemaname = 'public'
+              AND tablename != 'alembic_version';
         """)
 
-    conn.commit()
+        tables = [
+            sql.Identifier(table_name)
+            for (table_name,) in cursor.fetchall()
+        ]
 
-    cursor.close()
-    conn.close()
+        truncate_query = None
+
+        if tables:
+            truncate_query = sql.SQL("""
+                TRUNCATE TABLE {}
+                RESTART IDENTITY
+                CASCADE;
+            """).format(
+                sql.SQL(", ").join(tables)
+            )
+
+            # Setup
+            cursor.execute(truncate_query)
+            conn.commit()
+
+        # اجرای تست
+        yield
+
+        # Teardown
+        if truncate_query is not None:
+            cursor.execute(truncate_query)
+            conn.commit()
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 # =====================================================
@@ -50,7 +72,6 @@ def clean_database():
 
 @pytest.fixture
 def client():
-
     return TestClient(app)
 
 
@@ -61,7 +82,6 @@ def client():
 
 @pytest.fixture
 def admin_token(client):
-
     register_response = client.post(
         "/auth/register",
         json={
@@ -74,14 +94,13 @@ def admin_token(client):
     assert register_response.status_code == 201, register_response.json()
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE users
         SET role = 'admin'
         WHERE username = 'admin_test';
-        """)
+    """)
 
     conn.commit()
 
@@ -89,7 +108,11 @@ def admin_token(client):
     conn.close()
 
     login_response = client.post(
-        "/auth/login", json={"username": "admin_test", "password": "12345678"}
+        "/auth/login",
+        json={
+            "username": "admin_test",
+            "password": "12345678",
+        },
     )
 
     assert login_response.status_code == 200, login_response.json()
@@ -104,8 +127,9 @@ def admin_token(client):
 
 @pytest.fixture
 def auth_headers(admin_token):
-
-    return {"Authorization": f"Bearer {admin_token}"}
+    return {
+        "Authorization": f"Bearer {admin_token}"
+    }
 
 
 # =====================================================
@@ -115,7 +139,6 @@ def auth_headers(admin_token):
 
 @pytest.fixture
 def test_user(client):
-
     response = client.post(
         "/auth/register",
         json={
@@ -127,7 +150,10 @@ def test_user(client):
 
     assert response.status_code == 201, response.json()
 
-    return {"username": "test_user", "password": "12345678"}
+    return {
+        "username": "test_user",
+        "password": "12345678",
+    }
 
 
 # =====================================================
@@ -137,10 +163,12 @@ def test_user(client):
 
 @pytest.fixture
 def user_token(client, test_user):
-
     login_response = client.post(
         "/auth/login",
-        json={"username": test_user["username"], "password": test_user["password"]},
+        json={
+            "username": test_user["username"],
+            "password": test_user["password"],
+        },
     )
 
     assert login_response.status_code == 200, login_response.json()
@@ -155,9 +183,12 @@ def user_token(client, test_user):
 
 @pytest.fixture
 def test_category(client, auth_headers):
-
     response = client.post(
-        "/categories/", headers=auth_headers, json={"name": "Coffee"}
+        "/categories/",
+        headers=auth_headers,
+        json={
+            "name": "Coffee",
+        },
     )
 
     assert response.status_code == 201, response.json()
@@ -172,7 +203,6 @@ def test_category(client, auth_headers):
 
 @pytest.fixture
 def test_product(client, auth_headers, test_category):
-
     response = client.post(
         "/products/",
         headers=auth_headers,

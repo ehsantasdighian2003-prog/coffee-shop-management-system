@@ -102,6 +102,17 @@ class CategoryNotFoundException(AppException):
 
 
 # =========================
+# SUPPLIERS
+# =========================
+
+
+class SupplierNotFoundException(AppException):
+
+    status_code: int = 404
+    detail = "Supplier not found"
+
+
+# =========================
 # ORDERS
 # =========================
 

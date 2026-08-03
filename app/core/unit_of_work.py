@@ -7,6 +7,7 @@ from app.repositories.product_repository import ProductRepository
 from app.repositories.report_repository import ReportRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.inventory_repository import InventoryRepository
+from app.repositories.supplier_repository import SupplierRepository
 
 
 class UnitOfWork:
@@ -27,6 +28,7 @@ class UnitOfWork:
         self.auth: AuthRepository | None = None
         self.reports: ReportRepository | None = None
         self.inventory: InventoryRepository | None = None
+        self.suppliers: SupplierRepository | None = None
 
 
     def __enter__(self) -> "UnitOfWork":
@@ -46,6 +48,8 @@ class UnitOfWork:
         self.reports = ReportRepository(self.conn)
         
         self.inventory = InventoryRepository(self.conn)
+
+        self.suppliers = SupplierRepository(self.conn)
 
         return self
 
@@ -70,3 +74,11 @@ class UnitOfWork:
             finally:
 
                 self.conn.close()
+                
+                
+    def commit(self):
+        self.conn.commit()
+        
+        
+    def rollback(self):
+        self.conn.rollback()
