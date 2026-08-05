@@ -26,6 +26,12 @@ from app.routes.orders import router as orders_router
 from app.routes.products import router as products_router
 from app.routes.reports import router as reports_router
 from app.routes.suppliers import router as suppliers_router
+from app.routes.purchase_orders import router as purchase_orders_router
+from app.routes.warehouses import router as warehouses_router
+from app.routes.product_batches import router as product_batches_router
+from app.routes.waste import router as waste_router
+from app.routes.inventory_reports import router as inventory_reports_router
+
 
 
 # =====================================================
@@ -122,6 +128,15 @@ app.include_router(inventory_router)
 
 app.include_router(suppliers_router)
 
+app.include_router(purchase_orders_router)
+
+app.include_router(warehouses_router)
+
+app.include_router(product_batches_router)
+
+app.include_router(waste_router)
+
+app.include_router(inventory_reports_router)
 
 # =====================================================
 # ROOT

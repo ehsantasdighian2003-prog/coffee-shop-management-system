@@ -219,3 +219,30 @@ def test_product(client, auth_headers, test_category):
     assert response.status_code == 201, response.json()
 
     return response.json()
+
+
+# =====================================================
+# CREATE TEST SUPPLIER
+# =====================================================
+
+
+@pytest.fixture
+def test_supplier(
+    client,
+    auth_headers,
+):
+
+    response = client.post(
+        "/suppliers/",
+        headers=auth_headers,
+        json={
+            "name": "Arabica Supplier",
+            "phone": "09123456789",
+            "email": "arabica@test.com",
+            "address": "Tehran",
+        },
+    )
+
+    assert response.status_code == 201, response.json()
+
+    return response.json()

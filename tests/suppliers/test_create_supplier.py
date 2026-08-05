@@ -20,3 +20,4 @@ def test_create_supplier(client, auth_headers):
     assert data["email"] == "arabica@test.com"
     assert data["is_active"] is True
     assert data["is_deleted"] is False
+    

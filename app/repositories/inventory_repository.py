@@ -51,6 +51,32 @@ class InventoryRepository:
                 ),
             )
 
+
+    def decrease_stock(
+        self,
+        product_id: int,
+        quantity: int,
+    ):
+
+        product = self.get_product_by_id(
+            product_id
+        )
+
+        if product is None:
+            return None
+
+        new_stock = (
+            product["stock"] - quantity
+        )
+
+        self.update_product_stock(
+            product_id,
+            new_stock,
+        )
+
+        return new_stock
+
+
     # =====================================================
     # CREATE INVENTORY TRANSACTION
     # =====================================================
@@ -64,6 +90,7 @@ class InventoryRepository:
         created_by=None,
         supplier_id=None,
         order_id=None,
+        purchase_order_id=None,
     ):
 
         with self.conn.cursor(
@@ -80,11 +107,12 @@ class InventoryRepository:
                     reason,
                     created_by,
                     supplier_id,
-                    order_id
+                    order_id,
+                    purchase_order_id
                 )
                 VALUES
                 (
-                    %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s
                 )
                 RETURNING *
                 """,
@@ -96,6 +124,7 @@ class InventoryRepository:
                     created_by,
                     supplier_id,
                     order_id,
+                    purchase_order_id,
                 ),
             )
 
