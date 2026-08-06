@@ -31,7 +31,7 @@ from app.routes.warehouses import router as warehouses_router
 from app.routes.product_batches import router as product_batches_router
 from app.routes.waste import router as waste_router
 from app.routes.inventory_reports import router as inventory_reports_router
-
+from app.routes.customers import router as customers_router
 
 
 # =====================================================
@@ -137,6 +137,8 @@ app.include_router(product_batches_router)
 app.include_router(waste_router)
 
 app.include_router(inventory_reports_router)
+
+app.include_router(customers_router)
 
 # =====================================================
 # ROOT

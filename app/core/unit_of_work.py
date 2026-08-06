@@ -13,6 +13,7 @@ from app.repositories.warehouse_repository import WarehouseRepository
 from app.repositories.product_batch_repository import ProductBatchRepository
 from app.repositories.waste_repository import WasteRepository
 from app.repositories.inventory_report_repository import InventoryReportRepository
+from app.repositories.customer_repository import CustomerRepository
 
 
 class UnitOfWork:
@@ -39,6 +40,7 @@ class UnitOfWork:
         self.product_batches: ProductBatchRepository | None = None
         self.waste: WasteRepository | None = None
         self.inventory_report: InventoryReportRepository | None = None
+        self.customer: CustomerRepository | None = None
 
 
     def __enter__(self) -> "UnitOfWork":
@@ -70,6 +72,8 @@ class UnitOfWork:
         self.waste = WasteRepository(self.conn)
 
         self.inventory_report = InventoryReportRepository(self.conn)
+
+        self.customer = CustomerRepository(self.conn)
 
         return self
 

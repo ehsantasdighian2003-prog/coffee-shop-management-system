@@ -113,6 +113,23 @@ class SupplierNotFoundException(AppException):
 
 
 # =========================
+# CUSTOMERS
+# =========================
+
+
+class CustomerNotFoundException(AppException):
+
+    status_code: int = 404
+    detail = "Customer not found"
+
+
+class CustomerAlreadyExistsException(AppException):
+
+    status_code: int = 400
+    detail = "Customer already exists"
+
+
+# =========================
 # ORDERS
 # =========================
 
